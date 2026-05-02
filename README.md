@@ -172,6 +172,18 @@ npm install
 npm run build
 ```
 
+
+## Troubleshooting
+
+- If `pip install -e "[... ]"` fails with proxy/network errors (for example `403 Forbidden` when resolving packages), configure a reachable package index or proxy first, then retry installation.
+- Backend tests depend on the `dev` extra (`httpx`, `pytest`, `pytest-asyncio`). Install with:
+
+```bash
+cd backend
+pip install -e ".[dev,mlflow]" pyqlib
+pytest
+```
+
 ## Roadmap
 
 | Phase | Feature | Status |
