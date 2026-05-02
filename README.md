@@ -39,7 +39,7 @@ Qlib Studio currently includes three main views:
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/ximilu0114-droid/qlib-studio.git
 cd qlib-studio
 ```
 
