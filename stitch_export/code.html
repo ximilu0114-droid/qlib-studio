@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Qlib Studio Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Space+Grotesk:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c7c6ca",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-surface": "#191c1e",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "tertiary": "#000000",
+                        "surface-tint": "#5f5e5f",
+                        "tertiary-fixed": "#e6e2de",
+                        "on-surface-variant": "#46474a",
+                        "inverse-surface": "#2d3133",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#cac6c2",
+                        "primary-fixed": "#e5e2e3",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-primary": "#c8c6c7",
+                        "on-secondary-container": "#54647a",
+                        "on-primary-container": "#858384",
+                        "on-tertiary-fixed": "#1c1b19",
+                        "on-tertiary-fixed-variant": "#484644",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary": "#505f76",
+                        "secondary-container": "#d0e1fb",
+                        "primary-fixed-dim": "#c8c6c7",
+                        "background": "#f7f9fb",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-primary-fixed": "#1b1b1c",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "outline": "#76777b",
+                        "surface-dim": "#d8dadc",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#1b1b1c",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed-variant": "#474647",
+                        "on-tertiary-container": "#868380",
+                        "tertiary-container": "#1c1b19",
+                        "surface-container": "#eceef0",
+                        "surface": "#f7f9fb",
+                        "on-background": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "container-margin": "1.5rem",
+                        "element-padding": "0.5rem",
+                        "panel-gap": "0.75rem",
+                        "gutter": "1rem"
+                    },
+                    "fontFamily": {
+                        "code-snippet": ["monospace"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-mono": ["Space Grotesk"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "code-snippet": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-lowest text-on-surface font-body-sm docked left-0 h-full w-64 border-r border-outline-variant flat no shadows transition-all duration-150 ease-in-out flex flex-col fixed left-0 top-0 h-screen w-64 pt-12 z-40 hidden md:flex">
+<div class="px-4 mb-8">
+<h1 class="text-sm font-black uppercase tracking-widest text-on-surface">Qlib Studio</h1>
+<span class="text-on-surface-variant font-label-mono text-label-mono mt-1 block">v1.0.4-stable</span>
+</div>
+<div class="flex-1 px-2 space-y-1">
+<a class="bg-surface-variant text-on-surface border-l-2 border-primary flex items-center px-3 py-2 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">terminal</span>
+                Workbench
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface flex items-center px-3 py-2 transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">science</span>
+                Experiments
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface flex items-center px-3 py-2 transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">database</span>
+                Datasets
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface flex items-center px-3 py-2 transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">hub</span>
+                Models
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface flex items-center px-3 py-2 transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">settings</span>
+                System Settings
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-64 w-full">
+<!-- TopAppBar -->
+<header class="bg-surface-container-lowest text-on-surface font-body-sm tracking-tight docked full-width top-0 border-b border-outline-variant flat no shadows flex justify-between items-center h-12 px-4 w-full z-50 md:hidden">
+<div class="flex items-center">
+<span class="material-symbols-outlined mr-2">menu</span>
+<span class="text-lg font-bold tracking-tighter text-on-surface">Qlib Studio</span>
+</div>
+<div class="flex items-center space-x-2">
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-70 p-1 rounded">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-container-margin md:p-8 space-y-8 flex-1">
+<!-- Page Header -->
+<div class="flex justify-between items-end border-b border-outline-variant pb-4">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Qlib Studio Dashboard</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Local Quant Research Workbench</p>
+</div>
+<button class="bg-primary text-on-primary border border-primary px-3 py-1.5 rounded font-body-sm text-body-sm hover:opacity-90 transition-opacity flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[16px] mr-1" style="font-variation-settings: 'FILL' 1;">refresh</span>
+                    Refresh Status
+                </button>
+</div>
+<!-- Readiness Banner -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-4 flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">System Ready</span>
+</div>
+<span class="bg-surface-variant text-on-surface px-2 py-0.5 rounded font-label-mono text-label-mono border border-outline-variant">ALL SYSTEMS GO</span>
+</div>
+<!-- System Status Grid -->
+<div>
+<h3 class="font-label-mono text-label-mono text-on-surface-variant mb-3 uppercase tracking-widest border-b border-outline-variant pb-1">System Status</h3>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-panel-gap">
+<!-- Status Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 flex flex-col justify-between h-24">
+<span class="font-label-mono text-label-mono text-on-surface-variant">Backend Status</span>
+<div class="flex items-center mt-2">
+<div class="w-2 h-2 rounded-full bg-on-surface mr-2"></div>
+<span class="font-code-snippet text-code-snippet text-on-surface">Online</span>
+</div>
+</div>
+<!-- Status Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 flex flex-col justify-between h-24">
+<span class="font-label-mono text-label-mono text-on-surface-variant">Python Version</span>
+<div class="mt-2">
+<span class="font-code-snippet text-code-snippet text-on-surface">3.10.12</span>
+</div>
+</div>
+<!-- Status Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 flex flex-col justify-between h-24">
+<span class="font-label-mono text-label-mono text-on-surface-variant">Qlib Installed</span>
+<div class="flex items-center mt-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface mr-1">check</span>
+<span class="font-code-snippet text-code-snippet text-on-surface">Yes</span>
+</div>
+</div>
+<!-- Status Card 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 flex flex-col justify-between h-24">
+<span class="font-label-mono text-label-mono text-on-surface-variant">Qlib Version</span>
+<div class="mt-2">
+<span class="font-code-snippet text-code-snippet text-on-surface">0.9.1.99</span>
+</div>
+</div>
+<!-- Status Card 5 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 flex flex-col justify-between h-24">
+<span class="font-label-mono text-label-mono text-on-surface-variant">MLflow Installed</span>
+<div class="flex items-center mt-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface mr-1">check</span>
+<span class="font-code-snippet text-code-snippet text-on-surface">Yes</span>
+</div>
+</div>
+<!-- Status Card 6 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-3 flex flex-col justify-between h-24">
+<span class="font-label-mono text-label-mono text-on-surface-variant">MLflow Version</span>
+<div class="mt-2">
+<span class="font-code-snippet text-code-snippet text-on-surface">2.8.0</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-panel-gap">
+<!-- Configuration Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col">
+<div class="p-4 border-b border-outline-variant">
+<h3 class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest">Qlib Data Path</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">This path should point to the Qlib data directory.</p>
+</div>
+<div class="p-4 flex-1 flex flex-col justify-center">
+<div class="flex space-x-2">
+<input class="flex-1 bg-surface-bright border border-outline-variant rounded px-3 py-1.5 font-code-snippet text-code-snippet text-on-surface focus:outline-none focus:border-primary focus:ring-0" type="text" value="~/.qlib/qlib_data/cn_data"/>
+<button class="bg-surface-container-lowest text-on-surface border border-outline-variant px-4 py-1.5 rounded font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">
+                                Save
+                            </button>
+</div>
+<div class="mt-3 flex items-center text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] mr-1">folder_open</span>
+<span>Current path verified</span>
+</div>
+</div>
+</div>
+<!-- Data Health Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col">
+<div class="p-4 border-b border-outline-variant">
+<h3 class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest">Data Health</h3>
+</div>
+<div class="p-0">
+<ul class="divide-y divide-outline-variant">
+<li class="p-3 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<span class="font-code-snippet text-code-snippet text-on-surface">Data path exists</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface">check_circle</span>
+</li>
+<li class="p-3 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<span class="font-code-snippet text-code-snippet text-on-surface">calendars folder exists</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface">check_circle</span>
+</li>
+<li class="p-3 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<span class="font-code-snippet text-code-snippet text-on-surface">instruments folder exists</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface">check_circle</span>
+</li>
+<li class="p-3 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<span class="font-code-snippet text-code-snippet text-on-surface">features folder exists</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface">check_circle</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Warnings Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-4">
+<h3 class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest mb-3 border-b border-outline-variant pb-1">System Warnings</h3>
+<div class="bg-surface-container-low border border-outline-variant rounded p-3 flex items-start">
+<span class="material-symbols-outlined text-on-surface-variant mr-3 mt-0.5">info</span>
+<div>
+<p class="font-body-md text-body-md text-on-surface">No active warnings.</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">The system is operating within expected parameters.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
