@@ -1,374 +1,192 @@
 # Qlib Studio
 
-A local web-based research workbench for [Microsoft Qlib](https://github.com/microsoft/qlib).
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-Qlib Studio provides a visual dashboard to manage your Qlib environment, configure data paths, and monitor system readiness — all running locally on your machine.
+Qlib Studio is a local web workbench for [Microsoft Qlib](https://github.com/microsoft/qlib). It wraps common quant research tasks in a browser UI: environment readiness checks, Qlib data path validation, workflow editing and execution, job logs, and MLflow experiment browsing.
 
-## Current Phase
+The project is designed to run on your own machine. Your Qlib data, workflow files, SQLite database, job logs, and MLflow artifacts stay local unless you configure a remote MLflow server yourself.
 
-**Phase 3 — Experiment Center**
+## Highlights
 
-## Features
+- Local dashboard for Qlib, Python, MLflow, and dataset readiness.
+- Persistent Qlib data path and MLflow tracking URI settings.
+- Built-in Qlib workflow templates for LightGBM Alpha158 and Alpha360.
+- YAML workflow editor with saved workflows under `storage/workflows/`.
+- Web UI for running `qrun`, tracking job status, viewing logs, and cancelling jobs.
+- MLflow Experiment Center for experiments, runs, params, metrics, tags, and artifacts.
+- FastAPI backend with a typed React/Vite frontend.
 
-### Phase 1 (Foundation)
-- FastAPI backend with SQLite storage
-- Qlib installation and version detection
-- MLflow installation and version detection
-- Qlib data path validation (calendars, instruments, features)
-- Configurable data path with persistent settings
-- Real-time dashboard UI with system status overview
+## Screens
 
-### Phase 2 (Workflow Runner)
-- View and edit Qlib workflow YAML templates
-- Save workflow YAML files
-- Run `qrun` from the web UI using subprocess
-- Real-time job status monitoring
-- Live log streaming with polling
-- Cancel running jobs
-- Job history and metadata storage
+Qlib Studio currently includes three main views:
 
-### Phase 3 (Experiment Center)
-- View MLflow experiments created by Qlib workflows
-- Browse runs under each experiment
-- View run details: params, metrics, and tags
-- Browse run artifacts with folder navigation
-- Configure MLflow tracking URI from the UI
-- Graceful fallback when MLflow is not installed or mlruns path is missing
+- **Workbench**: checks local Qlib installation, MLflow installation, configured data path, calendars, instruments, and features.
+- **Workflows**: loads YAML templates, saves edited workflows, starts `qrun`, and streams job logs.
+- **Experiments**: reads MLflow experiment results and lets you inspect runs and artifacts.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
+| Layer | Stack |
+| --- | --- |
 | Backend | Python 3.10+, FastAPI, SQLAlchemy, Pydantic |
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS |
-| Database | SQLite |
-| Icons | Google Material Symbols |
-| Fonts | Inter, Space Grotesk |
-
-## Project Structure
-
-```
-qlib-studio/
-├── backend/
-│   ├── pyproject.toml
-│   ├── run.py
-│   └── app/
-│       ├── main.py              # FastAPI app, CORS, lifespan
-│       ├── api/
-│       │   ├── health.py        # GET /api/health
-│       │   ├── qlib_status.py   # GET /api/qlib/status
-│       │   ├── settings.py      # GET/POST /api/settings
-│       │   ├── workflows.py     # Workflow & template endpoints
-│       │   ├── jobs.py          # Job execution endpoints
-│       │   └── experiments.py   # Experiment & run endpoints
-│       ├── services/
-│       │   ├── qlib_checker.py  # Environment checks
-│       │   ├── path_checker.py  # Path validation
-│       │   ├── template_service.py  # YAML template management
-│       │   ├── workflow_service.py  # Workflow file management
-│       │   ├── job_runner.py    # qrun subprocess management
-│       │   └── experiment_service.py # MLflow experiment reader
-│       ├── core/
-│       │   └── config.py        # App configuration
-│       ├── schemas/
-│       │   ├── qlib.py          # Qlib response models
-│       │   ├── settings.py      # Settings models
-│       │   ├── workflows.py     # Workflow & job models
-│       │   └── experiments.py   # Experiment & run models
-│       └── db/
-│           ├── database.py      # SQLAlchemy engine
-│           └── models.py        # DB models (Setting, Job)
-├── configs/
-│   └── qlib_templates/          # YAML workflow templates
-│       ├── workflow_config_lightgbm_Alpha158.yaml
-│       └── workflow_config_lightgbm_Alpha360.yaml
-├── frontend/
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── tailwind.config.js
-│   └── src/
-│       ├── App.tsx
-│       ├── api/client.ts
-│       ├── types/api.ts
-│       └── components/
-│           ├── Sidebar.tsx
-│           ├── ReadinessBanner.tsx
-│           ├── StatusCards.tsx
-│           ├── DataPathSection.tsx
-│           ├── DataHealth.tsx
-│           ├── Warnings.tsx
-│           ├── WorkflowRunner.tsx
-│           ├── WorkflowList.tsx
-│           ├── YamlEditor.tsx
-│           ├── JobList.tsx
-│           ├── JobLogs.tsx
-│           └── ExperimentCenter.tsx
-└── storage/
-    ├── qlib_studio.db           # SQLite database (auto-created)
-    ├── workflows/               # Saved workflow files
-    └── logs/
-        └── jobs/                # Per-job log files
-            └── {job_id}.log
-```
-
-## Prerequisites
-
-Before running Qlib Studio, you need to install:
-
-### 1. Microsoft Qlib
-
-```bash
-pip install pyqlib
-```
-
-Or install from source:
-
-```bash
-git clone https://github.com/microsoft/qlib.git
-cd qlib
-pip install .
-```
-
-### 2. MLflow (Optional, for Experiment Center)
-
-```bash
-pip install mlflow
-```
+| Storage | SQLite, local filesystem |
+| Quant workflow | Microsoft Qlib, `qrun` |
+| Experiment tracking | MLflow |
 
 ## Quick Start
 
-### Backend
+### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd qlib-studio
+```
+
+If your local folder name contains spaces, the commands still work. Just keep using quoted paths when needed.
+
+### 2. Start the backend
 
 ```bash
 cd backend
+python -m venv .venv
+source .venv/bin/activate
 
-# Install dependencies
-pip install fastapi uvicorn sqlalchemy pydantic pydantic-settings
-
-# Start the server
+pip install -e ".[mlflow]" pyqlib
 python run.py
 ```
 
-The backend runs at `http://localhost:8000`. API documentation is available at `http://localhost:8000/docs`.
+The API runs at [http://localhost:8000](http://localhost:8000). Open [http://localhost:8000/docs](http://localhost:8000/docs) for the generated API docs.
 
-### Frontend
+### 3. Start the frontend
+
+Open a second terminal:
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
-The frontend runs at `http://localhost:5173` and proxies API requests to the backend.
+The app runs at [http://localhost:5173](http://localhost:5173). Vite proxies `/api` requests to the backend at `localhost:8000`.
 
-### What This Phase Adds
+### 4. Configure Qlib data
 
-Phase 3 introduces the Experiment Center, which reads MLflow experiment results created by Qlib workflows. Users can browse experiments, inspect runs, view parameters and metrics, and navigate artifact files — all from the web UI.
+By default, Qlib Studio checks:
 
-### How It Works
-
-Qlib Studio uses the `mlflow.tracking.MlflowClient` API to read experiment data. When you run a Qlib workflow via `qrun`, MLflow automatically logs parameters, metrics, and artifacts to the configured tracking URI. Qlib Studio then reads this data and displays it in the Experiment Center.
-
-### Default MLflow Tracking URI
-
-By default, Qlib Studio uses:
-
-```
-file:./mlruns
+```text
+~/.qlib/qlib_data/cn_data
 ```
 
-This means MLflow reads experiment data from the `mlruns` directory relative to the backend working directory. If your Qlib workflows store results elsewhere, you can configure the tracking URI in the UI.
+If your Qlib dataset lives somewhere else, open the Workbench page and update the data path. A valid dataset should include calendars, instruments, and feature files.
 
-### Configuring the Tracking URI
+### 5. Run a workflow
 
-1. Navigate to the **Experiments** page in the sidebar
-2. In the **MLflow Configuration** section, enter the tracking URI
-3. Click **Save**
+1. Open **Workflows**.
+2. Select one of the built-in templates.
+3. Edit the YAML if needed.
+4. Save it as a workflow file.
+5. Click **Run qrun**.
+6. Watch job status and logs from the same page.
 
-Accepted formats:
-- `file:./mlruns` — relative path
-- `/absolute/path/to/mlruns` — absolute path
-- `https://remote-server` — remote MLflow server
+Saved workflows are written to `storage/workflows/`. Job logs are written to `storage/logs/jobs/{job_id}.log`.
 
-### Viewing Experiments
+## Configuration
 
-1. Navigate to the **Experiments** page
-2. The experiment list shows all MLflow experiments with:
-   - Experiment name
-   - Experiment ID
-   - Number of runs
+Qlib Studio works with sensible local defaults and stores user-facing settings in SQLite.
 
-### Viewing Runs
+| Setting | Default | Where to change |
+| --- | --- | --- |
+| Qlib data path | `~/.qlib/qlib_data/cn_data` | Workbench UI |
+| MLflow tracking URI | `file:./mlruns` | Experiments UI |
+| Backend URL | `http://localhost:8000` | `frontend/vite.config.ts` proxy |
+| Frontend URL | `http://localhost:5173` | Vite dev server |
 
-1. Click an experiment to view its runs
-2. The run list shows:
-   - Run ID (first 8 characters)
-   - Status (FINISHED, RUNNING, FAILED)
-   - Duration
-   - Metrics count
-   - Params count
-   - Start time
-
-### Viewing Run Details
-
-1. Click a run to view its details
-2. The detail view shows:
-   - **Basic info**: Status, start time, end time, run ID
-   - **Parameters table**: All logged parameters
-   - **Metrics table**: All logged metrics
-   - **Tags table**: All logged tags (collapsed by default)
-
-### Browsing Artifacts
-
-1. In the run detail view, the **Artifacts** section shows logged files
-2. Click folders to navigate into subdirectories
-3. Click `..` to navigate back to the parent directory
-4. File sizes are displayed for files
-
-### Graceful Fallback
-
-If MLflow is not installed or the tracking path does not exist:
-- A clear warning message is displayed
-- The experiment list is empty
-- The UI remains functional for other features
-
-## Phase 2: Qlib Workflow Runner
-
-### What This Phase Adds
-
-Phase 2 introduces a complete workflow execution system for running Qlib experiments directly from the web UI. Users can browse YAML templates, edit configurations, save custom workflows, and execute them via `qrun` with real-time monitoring.
-
-### Adding YAML Templates
-
-Place your Qlib workflow YAML files in the `configs/qlib_templates/` directory:
+The backend also supports environment variables with the `QLIB_STUDIO_` prefix. For example:
 
 ```bash
-configs/qlib_templates/
-├── workflow_config_lightgbm_Alpha158.yaml
-├── workflow_config_lightgbm_Alpha360.yaml
-└── your_custom_workflow.yaml
+QLIB_STUDIO_DEBUG=true python run.py
 ```
 
-Templates are automatically detected and displayed in the Workflow Runner UI.
+For `qrun`, the working directory is restricted to the project root, `backend/`, or a directory provided by `QLIB_STUDIO_SAFE_WORKING_DIR`.
 
-### Starting the Backend
+```bash
+export QLIB_STUDIO_SAFE_WORKING_DIR=/path/to/research/workspace
+```
+
+## Project Structure
+
+```text
+qlib-studio/
+├── backend/
+│   ├── app/
+│   │   ├── api/          # FastAPI routes
+│   │   ├── core/         # App configuration
+│   │   ├── db/           # SQLite models and session setup
+│   │   ├── schemas/      # Pydantic response/request models
+│   │   └── services/     # Qlib, workflow, job, MLflow services
+│   ├── tests/
+│   ├── pyproject.toml
+│   └── run.py
+├── configs/
+│   └── qlib_templates/   # Built-in workflow YAML templates
+├── frontend/
+│   ├── src/
+│   │   ├── api/          # API client
+│   │   ├── components/   # Dashboard, workflow, experiment UI
+│   │   └── types/        # Shared TypeScript API types
+│   ├── package.json
+│   └── vite.config.ts
+└── storage/
+    ├── qlib_studio.db    # Auto-created SQLite database
+    ├── workflows/        # Saved workflow YAML files
+    └── logs/jobs/        # Per-job qrun logs
+```
+
+## API Overview
+
+| Area | Endpoints |
+| --- | --- |
+| Health | `GET /api/health` |
+| Qlib status | `GET /api/qlib/status` |
+| Settings | `GET /api/settings`, `POST /api/settings/qlib-data-path`, `POST /api/settings/mlflow-tracking-uri` |
+| Workflows | `GET /api/workflows/templates`, `GET /api/workflows/templates/{name}`, `POST /api/workflows/save`, `GET /api/workflows/list`, `GET /api/workflows/{filename}`, `PUT /api/workflows/{filename}` |
+| Jobs | `POST /api/jobs/qrun`, `GET /api/jobs`, `GET /api/jobs/{id}`, `GET /api/jobs/{id}/logs`, `POST /api/jobs/{id}/cancel` |
+| Experiments | `GET /api/experiments`, `GET /api/experiments/{id}`, `GET /api/experiments/{id}/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/params`, `GET /api/runs/{id}/metrics`, `GET /api/runs/{id}/artifacts` |
+
+## Development
+
+Run backend tests:
 
 ```bash
 cd backend
-
-# Install dependencies
-pip install fastapi uvicorn sqlalchemy pydantic pydantic-settings
-
-# Start the server
-python run.py
+pip install -e ".[dev,mlflow]" pyqlib
+pytest
 ```
 
-The backend runs at `http://localhost:8000`. API documentation is available at `http://localhost:8000/docs`.
-
-### Starting the Frontend
+Build the frontend:
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start development server
-npm run dev
+npm run build
 ```
-
-The frontend runs at `http://localhost:5173` and proxies API requests to the backend.
-
-### Running a qrun Workflow
-
-1. Navigate to the **Workflows** page in the sidebar (or use the **Workflows** button on mobile)
-2. Select a template from the list to view its YAML content
-3. Edit the YAML if needed and save with a custom filename using the **Save Workflow** section
-4. After saving, the workflow is automatically selected in the **Saved Workflow** dropdown and can be run directly
-5. Set the working directory (defaults to `.`)
-6. Click **Run qrun** to start the job
-7. Monitor progress in the Jobs table below
-8. Click **Logs** to view real-time output
-
-### Job Log Location
-
-Job logs are saved to:
-
-```
-storage/logs/jobs/{job_id}.log
-```
-
-Each job receives its own log file containing stdout and stderr output from the `qrun` process.
-
-### Job Statuses
-
-| Status | Description |
-|--------|-------------|
-| `pending` | Job created, waiting to start |
-| `running` | qrun process is executing |
-| `success` | Job completed with exit code 0 |
-| `failed` | Job completed with non-zero exit code or qrun not found |
-| `cancelled` | Job terminated by user |
-
-## API Endpoints
-
-### System
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Backend health check |
-| GET | `/api/qlib/status` | Full environment status |
-| GET | `/api/settings` | Get current settings |
-| POST | `/api/settings/qlib-data-path` | Update the Qlib data path |
-| POST | `/api/settings/mlflow-tracking-uri` | Update MLflow tracking URI |
-
-### Workflows
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/workflows/templates` | List YAML templates from configs/ |
-| GET | `/api/workflows/templates/{name}` | Get template content |
-| POST | `/api/workflows/save` | Save workflow to storage/workflows/ |
-| GET | `/api/workflows/list` | List saved workflows |
-| GET | `/api/workflows/{filename}` | Get saved workflow content |
-
-### Jobs
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/jobs/qrun` | Start a new qrun job |
-| GET | `/api/jobs` | List all jobs (newest first) |
-| GET | `/api/jobs/{id}` | Get job details |
-| GET | `/api/jobs/{id}/logs` | Get job logs |
-| POST | `/api/jobs/{id}/cancel` | Cancel a running job |
-
-### Experiments
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/experiments` | List all MLflow experiments |
-| GET | `/api/experiments/{id}` | Get experiment details |
-| GET | `/api/experiments/{id}/runs` | List runs under an experiment |
-| GET | `/api/runs/{id}` | Get run details (params, metrics, tags) |
-| GET | `/api/runs/{id}/params` | Get run parameters only |
-| GET | `/api/runs/{id}/metrics` | Get run metrics only |
-| GET | `/api/runs/{id}/artifacts` | List run artifacts (supports `?path=` for subdirectories) |
-
-## What This Phase Does NOT Do Yet
-
-- **No backtest charting**: Phase 3 does not plot return curves or performance charts
-- **No pred.pkl parsing**: Phase 3 does not read or analyze prediction pickle files
-- **No RD-Agent integration**: RD-Agent support is planned for Phase 5
 
 ## Roadmap
 
 | Phase | Feature | Status |
-|-------|---------|--------|
-| **Phase 1** | Foundation & Environment Checker | Done |
-| **Phase 2** | qrun Workflow Runner | Done |
-| **Phase 3** | Experiment Center | Current |
-| **Phase 4** | Backtest Analyzer | Planned |
-| **Phase 5** | RD-Agent Integration | Planned |
+| --- | --- | --- |
+| Phase 1 | Foundation and environment checker | Done |
+| Phase 2 | Qlib workflow runner | Done |
+| Phase 3 | MLflow Experiment Center | Current |
+| Phase 4 | Backtest analyzer and charts | Planned |
+| Phase 5 | RD-Agent integration | Planned |
+
+## Notes
+
+- Qlib Studio does not download market data for you yet. Prepare your Qlib data separately, then point the UI to that directory.
+- The Experiment Center reads MLflow data; it does not rewrite runs or artifacts.
+- If MLflow is missing or the tracking path does not exist, the rest of the app continues to work and the Experiments page shows an empty or warning state.
 
 ## License
 
