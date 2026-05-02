@@ -111,7 +111,59 @@ qlib-studio/
             └── {job_id}.log
 ```
 
-## Phase 3: Experiment Center
+## Prerequisites
+
+Before running Qlib Studio, you need to install:
+
+### 1. Microsoft Qlib
+
+```bash
+pip install pyqlib
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/microsoft/qlib.git
+cd qlib
+pip install .
+```
+
+### 2. MLflow (Optional, for Experiment Center)
+
+```bash
+pip install mlflow
+```
+
+## Quick Start
+
+### Backend
+
+```bash
+cd backend
+
+# Install dependencies
+pip install fastapi uvicorn sqlalchemy pydantic pydantic-settings
+
+# Start the server
+python run.py
+```
+
+The backend runs at `http://localhost:8000`. API documentation is available at `http://localhost:8000/docs`.
+
+### Frontend
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+The frontend runs at `http://localhost:5173` and proxies API requests to the backend.
 
 ### What This Phase Adds
 
