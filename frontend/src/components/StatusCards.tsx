@@ -1,3 +1,5 @@
+import { useTranslation } from "../i18n";
+
 interface StatusCardsProps {
   backendOk: boolean;
   pythonVersion: string;
@@ -48,41 +50,43 @@ export default function StatusCards({
   mlflowInstalled,
   mlflowVersion,
 }: StatusCardsProps) {
+  const { t } = useTranslation();
+
   return (
     <div>
       <h3 className="font-label-mono text-label-mono text-on-surface-variant mb-3 uppercase tracking-widest border-b border-outline-variant pb-1">
-        System Status
+        {t('dashboard.systemStatus')}
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-panel-gap">
         <Card
-          label="Backend Status"
-          value={backendOk ? "Online" : "Offline"}
+          label={t('statusCards.backendStatus')}
+          value={backendOk ? t('common.online') : t('common.offline')}
           ok={backendOk}
         />
         <Card
-          label="Python Version"
+          label={t('statusCards.pythonVersion')}
           value={pythonVersion || "\u2014"}
           ok={!!pythonVersion}
         />
         <Card
-          label="Qlib Installed"
-          value={qlibInstalled ? "Yes" : "No"}
+          label={t('statusCards.qlibInstalled')}
+          value={qlibInstalled ? t('common.yes') : t('common.no')}
           ok={qlibInstalled}
           icon="check"
         />
         <Card
-          label="Qlib Version"
+          label={t('statusCards.qlibVersion')}
           value={qlibVersion || "\u2014"}
           ok={qlibInstalled}
         />
         <Card
-          label="MLflow Installed"
-          value={mlflowInstalled ? "Yes" : "No"}
+          label={t('statusCards.mlflowInstalled')}
+          value={mlflowInstalled ? t('common.yes') : t('common.no')}
           ok={mlflowInstalled}
           icon="check"
         />
         <Card
-          label="MLflow Version"
+          label={t('statusCards.mlflowVersion')}
           value={mlflowVersion || "\u2014"}
           ok={mlflowInstalled}
         />

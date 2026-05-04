@@ -10,14 +10,23 @@ from app.schemas.rdagent import (
 )
 from app.schemas.workflows import JobLogResponse, JobResponse
 from app.services import rdagent_checker, rdagent_runner
+from app.services.settings_store import (
+    get_rdagent_env_file,
+    get_rdagent_output_dir,
+    get_rdagent_working_dir,
+)
 
 router = APIRouter(tags=["rdagent"])
 
 
 @router.get("/rdagent/status", response_model=RDagentStatusResponse)
-def get_rdagent_status():
+def get_rdagent_status(db: Session = Depends(get_db)):
     """Check RD-Agent installation, Docker, and health."""
-    return rdagent_checker.check_rdagent_status()
+    return rdagent_checker.check_rdagent_status(
+        working_dir=get_rdagent_working_dir(db),
+        output_dir=get_rdagent_output_dir(db),
+        env_file=get_rdagent_env_file(db),
+    )
 
 
 @router.post("/rdagent/health-check", response_model=RDagentHealthCheckResponse)

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "../i18n";
 
 interface DataPathSectionProps {
   currentPath: string;
@@ -14,6 +15,7 @@ export default function DataPathSection({
   const [input, setInput] = useState(currentPath);
   const [saving, setSaving] = useState(false);
   const [savingError, setSavingError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setInput(currentPath);
@@ -26,9 +28,7 @@ export default function DataPathSection({
       await onSave(input);
       setSavingError(null);
     } catch {
-      setSavingError(
-        "Failed to save Qlib data path. Please check if the backend is running."
-      );
+      setSavingError(t('dataPath.saveError'));
     } finally {
       setSaving(false);
     }
@@ -38,10 +38,10 @@ export default function DataPathSection({
     <div className="bg-surface-container-lowest border border-outline-variant rounded flex flex-col">
       <div className="p-4 border-b border-outline-variant">
         <h3 className="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest">
-          Qlib Data Path
+          {t('dataPath.title')}
         </h3>
         <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-          This path should point to the Qlib data directory.
+          {t('dataPath.description')}
         </p>
       </div>
       <div className="p-4 flex-1 flex flex-col justify-center">
@@ -57,7 +57,7 @@ export default function DataPathSection({
             disabled={saving}
             className="bg-surface-container-lowest text-on-surface border border-outline-variant px-4 py-1.5 rounded font-body-sm text-body-sm hover:bg-surface-container-low transition-colors disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Save"}
+            {saving ? t('common.saving') : t('common.save')}
           </button>
         </div>
         {savingError && (
@@ -74,7 +74,7 @@ export default function DataPathSection({
               {pathExists ? "folder_open" : "folder_off"}
             </span>
             <span>
-              {pathExists ? "Current path verified" : "Path does not exist"}
+              {pathExists ? t('dataPath.currentPathVerified') : t('dataPath.pathDoesNotExist')}
             </span>
           </div>
         )}

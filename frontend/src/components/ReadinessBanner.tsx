@@ -1,8 +1,12 @@
+import { useTranslation } from "../i18n";
+
 interface ReadinessBannerProps {
   ready: boolean;
 }
 
 export default function ReadinessBanner({ ready }: ReadinessBannerProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded p-4 flex items-center justify-between">
       <div className="flex items-center space-x-3">
@@ -13,13 +17,13 @@ export default function ReadinessBanner({ ready }: ReadinessBannerProps) {
           {ready ? "check_circle" : "error"}
         </span>
         <span className="font-headline-sm text-headline-sm text-on-surface">
-          {ready ? "System Ready" : "System Not Ready"}
+          {ready ? t('readiness.systemReady') : t('readiness.systemNotReady')}
         </span>
       </div>
       <span
         className={`${ready ? "bg-surface-variant" : "bg-error-container"} ${ready ? "text-on-surface" : "text-on-error-container"} px-2 py-0.5 rounded font-label-mono text-label-mono border border-outline-variant`}
       >
-        {ready ? "ALL SYSTEMS GO" : "ISSUES DETECTED"}
+        {ready ? t('readiness.allSystemsGo') : t('readiness.issuesDetected')}
       </span>
     </div>
   );

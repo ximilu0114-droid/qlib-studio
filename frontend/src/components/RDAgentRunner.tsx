@@ -15,37 +15,40 @@ import {
   fetchSettings,
   saveRDagentSettings,
 } from "../api/client";
+import { useTranslation } from "../i18n";
 
-const SCENARIOS = [
-  {
-    value: "fin_factor",
-    label: "AI Factor Research",
-    description: "Automated generation and evaluation of alpha factors.",
-    icon: "show_chart",
-    accent: "bg-primary-fixed-dim",
-  },
-  {
-    value: "fin_model",
-    label: "AI Model Research",
-    description: "Train and evaluate predictive models autonomously.",
-    icon: "model_training",
-    accent: "bg-secondary-fixed-dim",
-  },
-  {
-    value: "fin_quant",
-    label: "Factor + Model Research",
-    description: "End-to-end quantitative pipeline optimization.",
-    icon: "merge_type",
-    accent: "bg-primary",
-  },
-  {
-    value: "fin_factor_report",
-    label: "Report to Factor",
-    description: "Extract alpha factors from text-based reports.",
-    icon: "summarize",
-    accent: "bg-tertiary-fixed-dim",
-  },
-];
+function getScenarios(t: ReturnType<typeof useTranslation>['t']) {
+  return [
+    {
+      value: "fin_factor",
+      label: t('rdagent.aiFactorResearch'),
+      description: t('rdagent.aiFactorDesc'),
+      icon: "show_chart",
+      accent: "bg-primary-fixed-dim",
+    },
+    {
+      value: "fin_model",
+      label: t('rdagent.aiModelResearch'),
+      description: t('rdagent.aiModelDesc'),
+      icon: "model_training",
+      accent: "bg-secondary-fixed-dim",
+    },
+    {
+      value: "fin_quant",
+      label: t('rdagent.aiFactorModel'),
+      description: t('rdagent.aiFactorModelDesc'),
+      icon: "merge_type",
+      accent: "bg-primary",
+    },
+    {
+      value: "fin_factor_report",
+      label: t('rdagent.reportToFactor'),
+      description: t('rdagent.reportToFactorDesc'),
+      icon: "summarize",
+      accent: "bg-tertiary-fixed-dim",
+    },
+  ];
+}
 
 export default function RDAgentCenter() {
   const [status, setStatus] = useState<RDagentStatusResponse | null>(null);
@@ -75,6 +78,9 @@ export default function RDAgentCenter() {
 
   const logsEndRef = useRef<HTMLDivElement>(null);
 
+  const { t } = useTranslation();
+  const scenarios = getScenarios(t);
+
   const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "Unknown error";
 
@@ -90,11 +96,11 @@ export default function RDAgentCenter() {
       const data = await fetchRDagentStatus();
       setStatus(data);
     } catch (error) {
-      addError(`Failed to check RD-Agent status. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToCheckStatus')} ${getErrorMessage(error)}`);
     } finally {
       setStatusLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -107,9 +113,9 @@ export default function RDAgentCenter() {
       });
       setSettingsDirty(false);
     } catch (error) {
-      addError(`Failed to load settings. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToLoadSettings')} ${getErrorMessage(error)}`);
     }
-  }, []);
+  }, [t]);
 
   const loadJobs = useCallback(async () => {
     try {
@@ -180,7 +186,7 @@ export default function RDAgentCenter() {
       const result = await runRDagentHealthCheck();
       setHealthCheckResult(result);
     } catch (error) {
-      addError(`Health check request failed. ${getErrorMessage(error)}`);
+      addError(`${t('error.healthCheckFailed')} ${getErrorMessage(error)}`);
     } finally {
       setHealthCheckRunning(false);
     }
@@ -203,7 +209,7 @@ export default function RDAgentCenter() {
       });
       setSettingsDirty(false);
     } catch (error) {
-      addError(`Failed to save settings. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToSave')} ${getErrorMessage(error)}`);
     } finally {
       setSettingsSaving(false);
     }
@@ -222,7 +228,7 @@ export default function RDAgentCenter() {
       setExtraArgs("");
       await loadJobs();
     } catch (error) {
-      addError(`Failed to start RD-Agent job. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToStartRdagent')} ${getErrorMessage(error)}`);
     } finally {
       setStarting(false);
     }
@@ -235,7 +241,7 @@ export default function RDAgentCenter() {
       const logData = await fetchRDagentJobLogs(jobId);
       setLogContent(logData.logs);
     } catch (error) {
-      addError(`Failed to fetch job logs. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToFetchLogs')} ${getErrorMessage(error)}`);
     }
   };
 
@@ -244,7 +250,7 @@ export default function RDAgentCenter() {
       await cancelRDagentJob(jobId);
       await loadJobs();
     } catch (error) {
-      addError(`Failed to cancel job. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToCancelJob')} ${getErrorMessage(error)}`);
     }
   };
 
@@ -293,41 +299,41 @@ export default function RDAgentCenter() {
             ) : status ? (
               <div className="flex flex-wrap gap-element-padding justify-between items-center">
                 <RibbonItem
-                  label="RD-Agent"
+                  label={t('rdagent.installed')}
                   ok={status.rdagent_installed}
-                  detail={status.rdagent_version ?? "Not installed"}
+                  detail={status.rdagent_version ?? t('error.rdAgentNotInstalled')}
                 />
                 <div className="w-px h-8 bg-outline-variant/30 hidden sm:block" />
                 <RibbonItem
-                  label="Version"
+                  label={t('rdagent.version')}
                   ok={status.rdagent_installed}
                   detail={status.rdagent_version ?? "-"}
                   useInfoIcon
                 />
                 <div className="w-px h-8 bg-outline-variant/30 hidden sm:block" />
                 <RibbonItem
-                  label="Docker"
+                  label={t('rdagent.docker')}
                   ok={status.docker_available}
                   detail={
                     status.docker_available
-                      ? "Running"
+                      ? t('rdagent.dockerRunning')
                       : status.docker_installed
-                        ? "Daemon stopped"
-                        : "Not found"
+                        ? t('rdagent.dockerDaemonStopped')
+                        : t('rdagent.dockerNotFound')
                   }
                 />
                 <div className="w-px h-8 bg-outline-variant/30 hidden sm:block" />
                 <RibbonItem
-                  label=".env File"
+                  label={t('rdagent.envFile')}
                   ok={status.env_file_exists}
-                  detail={status.env_file_exists ? "Found" : "Missing"}
+                  detail={status.env_file_exists ? t('rdagent.envFound') : t('rdagent.envMissing')}
                   useInfoIcon
                 />
                 <div className="w-px h-8 bg-outline-variant/30 hidden sm:block" />
                 <RibbonItem
-                  label="LLM Config"
+                  label={t('rdagent.llmConfig')}
                   ok={status.llm_config_detected}
-                  detail={status.llm_config_detected ? "Valid" : "Missing"}
+                  detail={status.llm_config_detected ? t('rdagent.valid') : t('rdagent.envMissing')}
                 />
                 <div className="w-px h-8 bg-outline-variant/30 hidden md:block" />
                 <div
@@ -345,7 +351,7 @@ export default function RDAgentCenter() {
                     }`}
                   />
                   <p className="font-label-mono text-label-mono text-on-surface">
-                    {status.ready ? "System Ready" : "Not Ready"}
+                    {status.ready ? t('rdagent.systemReady') : t('rdagent.notReady')}
                   </p>
                 </div>
               </div>
@@ -356,14 +362,14 @@ export default function RDAgentCenter() {
           <section className="flex flex-col gap-element-padding">
             <div className="flex justify-between items-center border-b border-outline-variant/30 pb-unit">
               <h3 className="font-body-md text-body-md font-semibold text-on-background">
-                Scenario Selector
+                {t('rdagent.scenarioSelector')}
               </h3>
               <span className="font-label-mono text-[10px] uppercase text-on-surface-variant">
-                Select Research Type
+                {t('rdagent.selectResearchType')}
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-panel-gap">
-              {SCENARIOS.map((s) => {
+              {scenarios.map((s) => {
                 const isSelected = selectedScenario === s.value;
                 return (
                   <button
@@ -387,7 +393,7 @@ export default function RDAgentCenter() {
                         </h4>
                         {isSelected && (
                           <span className="font-label-mono text-[9px] bg-primary text-on-primary px-1 rounded uppercase">
-                            Selected
+                            {t('common.selected')}
                           </span>
                         )}
                       </div>
@@ -419,15 +425,15 @@ export default function RDAgentCenter() {
           <section className="bg-surface-container-lowest border border-outline-variant/50 rounded p-gutter flex flex-col gap-element-padding">
             <div className="flex justify-between items-center border-b border-outline-variant/30 pb-unit">
               <h3 className="font-body-md text-body-md font-semibold text-on-background">
-                Run Configuration
+                {t('rdagent.runConfig')}
               </h3>
               <span className="font-label-mono text-[10px] uppercase text-on-surface-variant">
-                Execution Setup
+                {t('rdagent.executionSetup')}
               </span>
             </div>
             <div className="flex flex-col gap-2">
               <label className="font-label-mono text-label-mono text-on-surface-variant">
-                Extra Arguments
+                {t('rdagent.extraArgs')}
               </label>
               <input
                 type="text"
@@ -446,7 +452,7 @@ export default function RDAgentCenter() {
                 <span className="material-symbols-outlined text-[18px]">
                   play_arrow
                 </span>
-                {starting ? "Starting..." : "Start RD-Agent Job"}
+                {starting ? t('rdagent.starting') : t('rdagent.startJob')}
               </button>
             </div>
           </section>
@@ -458,7 +464,7 @@ export default function RDAgentCenter() {
           <section className="bg-surface-container-lowest border border-outline-variant/50 rounded p-gutter flex flex-col gap-element-padding">
             <div className="flex justify-between items-center border-b border-outline-variant/30 pb-unit">
               <h3 className="font-body-md text-body-md font-semibold text-on-background">
-                Agent Settings
+                {t('rdagent.agentSettings')}
               </h3>
               <span className="material-symbols-outlined text-[18px] text-on-surface-variant">
                 settings
@@ -466,7 +472,7 @@ export default function RDAgentCenter() {
             </div>
             <div className="flex flex-col gap-unit">
               <label className="font-label-mono text-[10px] uppercase text-on-surface-variant">
-                Working Directory
+                {t('rdagent.workingDir')}
               </label>
               <input
                 type="text"
@@ -479,7 +485,7 @@ export default function RDAgentCenter() {
             </div>
             <div className="flex flex-col gap-unit">
               <label className="font-label-mono text-[10px] uppercase text-on-surface-variant">
-                Output Directory
+                {t('rdagent.outputDir')}
               </label>
               <input
                 type="text"
@@ -492,7 +498,7 @@ export default function RDAgentCenter() {
             </div>
             <div className="flex flex-col gap-unit">
               <label className="font-label-mono text-[10px] uppercase text-on-surface-variant">
-                Env File Path
+                {t('rdagent.envFilePath')}
               </label>
               <input
                 type="text"
@@ -508,7 +514,7 @@ export default function RDAgentCenter() {
               disabled={settingsSaving || !settingsDirty}
               className="w-full mt-2 border border-outline-variant text-on-surface font-body-sm text-[12px] font-medium px-3 py-1.5 rounded hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {settingsSaving ? "Saving..." : "Save Settings"}
+              {settingsSaving ? t('common.saving') : t('rdagent.saveSettings')}
             </button>
           </section>
 
@@ -516,17 +522,17 @@ export default function RDAgentCenter() {
           <section className="bg-surface-container-lowest border border-outline-variant/50 rounded p-gutter flex flex-col gap-element-padding flex-1">
             <div className="flex justify-between items-center border-b border-outline-variant/30 pb-unit">
               <h3 className="font-body-md text-body-md font-semibold text-on-background">
-                Health Check
+                {t('rdagent.healthCheck')}
               </h3>
               <button
                 onClick={handleHealthCheck}
-                disabled={healthCheckRunning || !status?.rdagent_installed}
+                disabled={healthCheckRunning}
                 className="flex items-center gap-1 font-body-sm text-[11px] text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span className="material-symbols-outlined text-[14px]">
                   health_and_safety
                 </span>
-                {healthCheckRunning ? "Running..." : "Run Check"}
+                {healthCheckRunning ? t('rdagent.runningCheck') : t('rdagent.runCheck')}
               </button>
             </div>
             <div className="bg-[#1e1e1e] rounded p-3 flex-1 min-h-[150px] font-code-snippet text-[11px] text-[#d4d4d4] overflow-x-auto shadow-inner flex flex-col gap-1">
@@ -535,7 +541,7 @@ export default function RDAgentCenter() {
                 <div className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
                 <div className="w-2 h-2 rounded-full bg-[#27c93f]" />
                 <span className="text-[#858585] ml-2 font-label-mono text-[9px] uppercase">
-                  Terminal
+                  {t('rdagent.terminal')}
                 </span>
               </div>
               {healthCheckResult ? (
@@ -578,12 +584,12 @@ export default function RDAgentCenter() {
                     health_check --no-check-env
                   </p>
                   <p className="text-[#ce9178] animate-pulse">
-                    Running health check...
+                    {t('rdagent.runningCheck')}
                   </p>
                 </>
               ) : (
                 <p className="text-[#858585]">
-                  Click "Run Check" to verify your RD-Agent environment.
+                  {t('rdagent.terminalHint')}
                 </p>
               )}
             </div>
@@ -597,7 +603,7 @@ export default function RDAgentCenter() {
         <section className="bg-surface-container-lowest border border-outline-variant/50 rounded flex flex-col">
           <div className="p-element-padding border-b border-outline-variant/30 flex justify-between items-center">
             <h3 className="font-body-md text-body-md font-semibold text-on-background px-2">
-              Recent RD-Agent Jobs
+              {t('rdagent.recentJobs')}
             </h3>
             <button
               onClick={loadJobs}
@@ -614,10 +620,10 @@ export default function RDAgentCenter() {
                 work
               </span>
               <p className="font-body-sm text-on-surface-variant">
-                No RD-Agent jobs yet
+                {t('rdagent.noJobsYet')}
               </p>
               <p className="text-[11px] text-on-surface-variant mt-1">
-                Start a scenario above to see jobs here
+                {t('rdagent.startScenarioAbove')}
               </p>
             </div>
           ) : (
@@ -625,11 +631,11 @@ export default function RDAgentCenter() {
               <table className="w-full text-left font-body-sm text-[12px]">
                 <thead className="bg-surface-container-low/50 border-b border-outline-variant/30 font-label-mono text-[10px] uppercase text-on-surface-variant">
                   <tr>
-                    <th className="px-4 py-2 font-medium">Job ID</th>
-                    <th className="px-4 py-2 font-medium">Scenario</th>
-                    <th className="px-4 py-2 font-medium">Status</th>
-                    <th className="px-4 py-2 font-medium">Started</th>
-                    <th className="px-4 py-2 font-medium">Working Dir</th>
+                    <th className="px-4 py-2 font-medium">{t('rdagent.jobId')}</th>
+                    <th className="px-4 py-2 font-medium">{t('rdagent.scenario')}</th>
+                    <th className="px-4 py-2 font-medium">{t('common.status')}</th>
+                    <th className="px-4 py-2 font-medium">{t('common.started')}</th>
+                    <th className="px-4 py-2 font-medium">{t('rdagent.workingDirShort')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/20">
@@ -671,7 +677,7 @@ export default function RDAgentCenter() {
           <div className="p-element-padding border-b border-outline-variant/30 flex justify-between items-center">
             <div className="flex items-center gap-2">
               <h3 className="font-body-md text-body-md font-semibold text-on-background px-2">
-                Process Logs
+                {t('rdagent.processLogs')}
               </h3>
               {selectedJob && selectedJob.status === "running" && (
                 <span className="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse" />
@@ -687,7 +693,7 @@ export default function RDAgentCenter() {
                 <button
                   onClick={() => handleCancel(selectedJob.id)}
                   className="flex items-center justify-center p-1 border border-error-container bg-error-container/20 text-error rounded hover:bg-error-container/50"
-                  title="Cancel Job"
+                  title={t('jobLogs.cancelJob')}
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     stop_circle
@@ -701,7 +707,7 @@ export default function RDAgentCenter() {
                     setLogContent("");
                   }}
                   className="flex items-center justify-center p-1 border border-outline-variant rounded text-on-surface-variant hover:bg-surface-container-low"
-                  title="Close Logs"
+                  title={t('common.close')}
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     close
@@ -723,7 +729,7 @@ export default function RDAgentCenter() {
               </>
             ) : (
               <div className="opacity-50">
-                Select a job from the table to view its logs.
+                {t('rdagent.selectJobToViewLogs')}
               </div>
             )}
           </div>

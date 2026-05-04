@@ -14,6 +14,7 @@ import WorkflowList from "./WorkflowList";
 import YamlEditor from "./YamlEditor";
 import JobList from "./JobList";
 import JobLogs from "./JobLogs";
+import { useTranslation } from "../i18n";
 
 export default function WorkflowRunner() {
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
@@ -29,6 +30,8 @@ export default function WorkflowRunner() {
   const [selectedWorkflowName, setSelectedWorkflowName] = useState("");
   const [workingDir, setWorkingDir] = useState(".");
   const [errors, setErrors] = useState<string[]>([]);
+
+  const { t } = useTranslation();
 
   const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "Unknown error";
@@ -58,7 +61,7 @@ export default function WorkflowRunner() {
       );
     } else {
       console.error("Failed to load templates:", templatesResult.reason);
-      addError(`Failed to load workflow templates. ${getErrorMessage(templatesResult.reason)}`);
+      addError(`${t('error.failedToLoadTemplates')} ${getErrorMessage(templatesResult.reason)}`);
     }
 
     if (savedResult.status === "fulfilled") {
@@ -68,18 +71,18 @@ export default function WorkflowRunner() {
       );
     } else {
       console.error("Failed to load saved workflows:", savedResult.reason);
-      addError(`Failed to load saved workflows. ${getErrorMessage(savedResult.reason)}`);
+      addError(`${t('error.failedToLoadWorkflows')} ${getErrorMessage(savedResult.reason)}`);
     }
 
     if (jobsResult.status === "fulfilled") {
       setJobs(jobsResult.value);
     } else {
       console.error("Failed to load jobs:", jobsResult.reason);
-      addError(`Failed to load jobs. ${getErrorMessage(jobsResult.reason)}`);
+      addError(`${t('error.failedToLoadJobs')} ${getErrorMessage(jobsResult.reason)}`);
     }
 
     setLoading(false);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadData();
@@ -93,10 +96,10 @@ export default function WorkflowRunner() {
         })
         .catch((error) => {
           console.error("Failed to load template:", error);
-          addError(`Failed to open workflow template. ${getErrorMessage(error)}`);
+          addError(`${t('error.failedToOpenTemplate')} ${getErrorMessage(error)}`);
         });
     }
-  }, [selectedTemplate]);
+  }, [selectedTemplate, t]);
 
   useEffect(() => {
     const hasRunningJobs = jobs.some((j) => j.status === "running");
@@ -155,7 +158,7 @@ export default function WorkflowRunner() {
       await loadData(saved.name);
     } catch (error) {
       console.error("Failed to save:", error);
-      addError(`Failed to save workflow. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToSaveWorkflow')} ${getErrorMessage(error)}`);
     } finally {
       setSaving(false);
     }
@@ -173,7 +176,7 @@ export default function WorkflowRunner() {
       clearErrors();
     } catch (error) {
       console.error("Failed to start job:", error);
-      addError(`Failed to start qrun job. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToStartJob')} ${getErrorMessage(error)}`);
     }
   };
 
@@ -185,7 +188,7 @@ export default function WorkflowRunner() {
       setLogContent(logData.logs);
     } catch (error) {
       console.error("Failed to fetch logs:", error);
-      addError(`Failed to fetch job logs. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToFetchLogs')} ${getErrorMessage(error)}`);
     }
   };
 
@@ -197,7 +200,7 @@ export default function WorkflowRunner() {
       clearErrors();
     } catch (error) {
       console.error("Failed to cancel job:", error);
-      addError(`Failed to cancel job. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToCancelJob')} ${getErrorMessage(error)}`);
     }
   };
 
@@ -262,14 +265,14 @@ export default function WorkflowRunner() {
       {/* Save Workflow Section */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4">
         <h3 className="font-body-sm text-on-surface font-semibold mb-3">
-          Save Workflow
+          {t('workflow.saveWorkflow')}
         </h3>
         <div className="flex gap-3">
           <input
             type="text"
             value={saveFilename}
             onChange={(e) => setSaveFilename(e.target.value)}
-            placeholder="Enter filename (e.g., my_workflow.yaml)"
+            placeholder={t('workflow.enterFilename')}
             className="flex-1 px-3 py-2 border border-outline-variant rounded font-body-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
           />
           <button
@@ -277,7 +280,7 @@ export default function WorkflowRunner() {
             disabled={saving || !saveFilename.trim()}
             className="bg-primary text-on-primary px-4 py-2 rounded font-body-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? "Saving..." : "Save"}
+            {saving ? t('common.saving') : t('common.save')}
           </button>
         </div>
       </div>
@@ -285,19 +288,19 @@ export default function WorkflowRunner() {
       {/* Run Workflow Section */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4">
         <h3 className="font-body-sm text-on-surface font-semibold mb-3">
-          Run Workflow
+          {t('workflow.runWorkflow')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div>
             <label className="block font-body-sm text-on-surface-variant mb-1">
-              Saved Workflow
+              {t('workflow.savedWorkflow')}
             </label>
             <select
               value={selectedWorkflowName}
               onChange={(e) => setSelectedWorkflowName(e.target.value)}
               className="w-full px-3 py-2 border border-outline-variant rounded font-body-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
             >
-              <option value="">Select a saved workflow</option>
+              <option value="">{t('workflow.selectSavedWorkflow')}</option>
               {savedWorkflows.map((workflow) => (
                 <option key={workflow.filename} value={workflow.filename}>
                   {workflow.filename}
@@ -307,7 +310,7 @@ export default function WorkflowRunner() {
           </div>
           <div>
             <label className="block font-body-sm text-on-surface-variant mb-1">
-              Working Directory
+              {t('workflow.workingDir')}
             </label>
             <input
               type="text"
@@ -326,7 +329,7 @@ export default function WorkflowRunner() {
           <span className="material-symbols-outlined text-[16px] mr-1">
             play_arrow
           </span>
-          Run qrun
+          {t('workflow.runQrun')}
         </button>
       </div>
 

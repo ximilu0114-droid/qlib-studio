@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "../i18n";
 
 interface Props {
   jobId: number | null;
@@ -16,6 +17,7 @@ export default function JobLogs({
   jobStatus,
 }: Props) {
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (logsEndRef.current) {
@@ -32,7 +34,7 @@ export default function JobLogs({
       <div className="bg-surface-container-lowest rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[80vh] flex flex-col">
         <div className="px-4 py-3 border-b border-outline-variant flex justify-between items-center">
           <h3 className="font-body-lg text-on-surface font-semibold">
-            Job #{jobId} Logs
+            {t('jobLogs.title').replace('{id}', String(jobId))}
           </h3>
           <div className="flex items-center space-x-2">
             {jobStatus === "running" && (
@@ -43,7 +45,7 @@ export default function JobLogs({
                 <span className="material-symbols-outlined text-[16px] mr-1">
                   cancel
                 </span>
-                Cancel Job
+                {t('jobLogs.cancelJob')}
               </button>
             )}
             <button
@@ -56,19 +58,19 @@ export default function JobLogs({
         </div>
         <div className="flex-1 overflow-auto p-4">
           <pre className="font-mono text-sm text-on-surface whitespace-pre-wrap bg-surface-container-high p-4 rounded-lg min-h-[300px] max-h-[60vh] overflow-auto">
-            {logs || "No logs yet..."}
+            {logs || t('jobLogs.noLogsYet')}
             <div ref={logsEndRef} />
           </pre>
         </div>
         <div className="px-4 py-3 border-t border-outline-variant flex justify-between items-center">
           <div className="font-body-sm text-on-surface-variant">
-            Status: <span className="font-medium">{jobStatus || "unknown"}</span>
+            {t('common.status')}: <span className="font-medium">{jobStatus || "unknown"}</span>
           </div>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-surface-container-high text-on-surface rounded font-body-sm hover:opacity-90"
           >
-            Close
+            {t('common.close')}
           </button>
         </div>
       </div>

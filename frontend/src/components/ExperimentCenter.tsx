@@ -15,6 +15,7 @@ import {
   saveMlflowTrackingUri,
   fetchMlflowStatus,
 } from "../api/client";
+import { useTranslation } from "../i18n";
 
 type View = "experiments" | "runs" | "detail";
 
@@ -33,6 +34,8 @@ export default function ExperimentCenter() {
   const [mlflowStatus, setMlflowStatus] = useState<MlflowStatusResponse | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
+  const { t } = useTranslation();
+
   const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "Unknown error";
 
@@ -42,7 +45,6 @@ export default function ExperimentCenter() {
 
   const clearErrors = () => setErrors([]);
 
-  // Load settings to get tracking URI
   const loadSettings = useCallback(async () => {
     try {
       const settings = await fetchSettings();
@@ -52,7 +54,6 @@ export default function ExperimentCenter() {
     }
   }, []);
 
-  // Load experiments
   const loadExperiments = useCallback(async () => {
     try {
       const [data, status] = await Promise.all([
@@ -68,12 +69,11 @@ export default function ExperimentCenter() {
       clearErrors();
     } catch (error) {
       console.error("Failed to load experiments:", error);
-      addError(`Failed to load experiments. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToLoadExperiments')} ${getErrorMessage(error)}`);
       setMlflowAvailable(false);
     }
-  }, []);
+  }, [t]);
 
-  // Initial load
   useEffect(() => {
     const init = async () => {
       setLoading(true);
@@ -84,7 +84,6 @@ export default function ExperimentCenter() {
     init();
   }, [loadSettings, loadExperiments]);
 
-  // Handle tracking URI save
   const handleSaveTrackingUri = async () => {
     if (!trackingUriInput.trim()) return;
     try {
@@ -94,11 +93,10 @@ export default function ExperimentCenter() {
       clearErrors();
     } catch (error) {
       console.error("Failed to save tracking URI:", error);
-      addError(`Failed to save tracking URI. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToSaveTrackingUri')} ${getErrorMessage(error)}`);
     }
   };
 
-  // Select experiment and load runs
   const handleSelectExperiment = async (exp: ExperimentSummary) => {
     setSelectedExperiment(exp);
     setSelectedRun(null);
@@ -110,11 +108,10 @@ export default function ExperimentCenter() {
       clearErrors();
     } catch (error) {
       console.error("Failed to load runs:", error);
-      addError(`Failed to load runs. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToLoadRuns')} ${getErrorMessage(error)}`);
     }
   };
 
-  // Select run and load details
   const handleSelectRun = async (run: RunSummary) => {
     try {
       const detail = await fetchRunDetail(run.run_id);
@@ -122,17 +119,15 @@ export default function ExperimentCenter() {
       setArtifactPath("");
       setView("detail");
 
-      // Load root artifacts
       const artData = await fetchRunArtifacts(run.run_id);
       setArtifacts(artData.artifacts);
       clearErrors();
     } catch (error) {
       console.error("Failed to load run details:", error);
-      addError(`Failed to load run details. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToLoadRunDetails')} ${getErrorMessage(error)}`);
     }
   };
 
-  // Navigate into artifact subdirectory
   const handleArtifactNavigate = async (path: string) => {
     if (!selectedRun) return;
     try {
@@ -141,11 +136,10 @@ export default function ExperimentCenter() {
       setArtifacts(artData.artifacts);
     } catch (error) {
       console.error("Failed to load artifacts:", error);
-      addError(`Failed to load artifacts. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToLoadArtifacts')} ${getErrorMessage(error)}`);
     }
   };
 
-  // Go back
   const handleBack = () => {
     if (view === "detail") {
       setView("runs");
@@ -158,13 +152,11 @@ export default function ExperimentCenter() {
     }
   };
 
-  // Format timestamp
   const formatTime = (ts: string | null) => {
     if (!ts) return "-";
     return new Date(ts).toLocaleString();
   };
 
-  // Format duration
   const formatDuration = (seconds: number | null) => {
     if (seconds === null) return "-";
     if (seconds < 60) return `${seconds.toFixed(1)}s`;
@@ -173,7 +165,6 @@ export default function ExperimentCenter() {
     return `${minutes}m ${secs}s`;
   };
 
-  // Format metric value
   const formatMetric = (value: number) => {
     if (Number.isInteger(value)) return value.toString();
     return value.toFixed(6);
@@ -239,7 +230,7 @@ export default function ExperimentCenter() {
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-body-sm text-on-surface font-semibold">
-            MLflow Configuration
+            {t('experiment.mlflowConfig')}
           </h3>
           <span
             className={`px-2 py-0.5 rounded text-xs font-medium ${
@@ -248,7 +239,7 @@ export default function ExperimentCenter() {
                 : "bg-yellow-100 text-yellow-800"
             }`}
           >
-            {mlflowAvailable ? "Connected" : "Not Available"}
+            {mlflowAvailable ? t('common.connected') : t('common.notAvailable')}
           </span>
         </div>
 
@@ -264,24 +255,24 @@ export default function ExperimentCenter() {
             onClick={handleSaveTrackingUri}
             className="bg-primary text-on-primary px-4 py-2 rounded font-body-sm hover:opacity-90"
           >
-            Save
+            {t('common.save')}
           </button>
         </div>
         {mlflowStatus && (
           <div className="mt-2 space-y-1">
             <p className="text-on-surface-variant font-body-sm text-xs">
-              Resolved path: <code className="bg-surface-container-low px-1 rounded">{mlflowStatus.resolved_mlruns_path}</code>
+              {t('experiment.resolvedPath')}: <code className="bg-surface-container-low px-1 rounded">{mlflowStatus.resolved_mlruns_path}</code>
               {!mlflowStatus.path_exists && (
-                <span className="text-error ml-2">(does not exist)</span>
+                <span className="text-error ml-2">{t('experiment.doesNotExist')}</span>
               )}
             </p>
             <p className="text-on-surface-variant font-body-sm text-xs">
-              {mlflowStatus.experiment_count} experiment(s), {mlflowStatus.run_count} run(s)
+              {t('experiment.experimentCount').replace('{count}', String(mlflowStatus.experiment_count))}, {t('experiment.runCount').replace('{count}', String(mlflowStatus.run_count))}
             </p>
           </div>
         )}
         <p className="text-on-surface-variant font-body-sm mt-2">
-          Accepts: file:./mlruns, /absolute/path, or https://remote-server
+          {t('experiment.accepts')}
         </p>
       </div>
 
@@ -295,8 +286,8 @@ export default function ExperimentCenter() {
             arrow_back
           </span>
           {view === "runs"
-            ? "Back to Experiments"
-            : "Back to Runs"}
+            ? t('experiment.backToExperiments')
+            : t('experiment.backToRuns')}
         </button>
       )}
 
@@ -305,7 +296,7 @@ export default function ExperimentCenter() {
         <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
           <div className="px-4 py-3 border-b border-outline-variant">
             <h3 className="font-body-sm text-on-surface font-semibold">
-              Experiments ({experiments.length})
+              {t('experiment.experiments')} ({experiments.length})
             </h3>
           </div>
           {experiments.length === 0 ? (
@@ -313,9 +304,9 @@ export default function ExperimentCenter() {
               <span className="material-symbols-outlined text-4xl mb-2 block">
                 science
               </span>
-              <p className="font-body-sm">No experiments found</p>
+              <p className="font-body-sm">{t('experiment.noExperiments')}</p>
               <p className="text-xs mt-1">
-                Run a Qlib workflow to create experiments
+                {t('experiment.runQlibWorkflow')}
               </p>
             </div>
           ) : (
@@ -323,9 +314,8 @@ export default function ExperimentCenter() {
               {noRunsFound && (
                   <div className="px-4 py-3 bg-yellow-50 border-b border-yellow-200">
                     <p className="text-xs text-yellow-800">
-                      No runs found. Make sure Workflow Runner and Experiment Center use the same
-                      MLflow tracking URI. Check that qrun is writing to:{" "}
-                      <code className="bg-yellow-100 px-1 rounded">
+                      {t('experiment.noRunsFound')}. {t('experiment.runQlibWorkflowToCreate')}
+                      {" "}<code className="bg-yellow-100 px-1 rounded">
                         {mlflowStatus?.resolved_mlruns_path || trackingUriInput}
                       </code>
                     </p>
@@ -362,7 +352,7 @@ export default function ExperimentCenter() {
         <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
           <div className="px-4 py-3 border-b border-outline-variant">
             <h3 className="font-body-sm text-on-surface font-semibold">
-              Runs in &quot;{selectedExperiment.name}&quot; ({runs.length})
+              {t('experiment.runsIn').replace('{name}', selectedExperiment.name)} ({runs.length})
             </h3>
           </div>
           {runs.length === 0 ? (
@@ -370,7 +360,7 @@ export default function ExperimentCenter() {
               <span className="material-symbols-outlined text-4xl mb-2 block">
                 hourglass_empty
               </span>
-              <p className="font-body-sm">No runs in this experiment</p>
+              <p className="font-body-sm">{t('experiment.noRuns')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -378,22 +368,22 @@ export default function ExperimentCenter() {
                 <thead>
                   <tr className="border-b border-outline-variant bg-surface-container-low">
                     <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                      Run ID
+                      {t('experiment.runId')}
                     </th>
                     <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                      Status
+                      {t('common.status')}
                     </th>
                     <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                      Duration
+                      {t('experiment.duration')}
                     </th>
                     <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                      Metrics
+                      {t('common.metrics')}
                     </th>
                     <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                      Params
+                      {t('common.params')}
                     </th>
                     <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                      Started
+                      {t('common.started')}
                     </th>
                   </tr>
                 </thead>
@@ -453,7 +443,7 @@ export default function ExperimentCenter() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs text-on-surface-variant">Status</p>
+                <p className="text-xs text-on-surface-variant">{t('common.status')}</p>
                 <span
                   className={`px-2 py-0.5 rounded text-xs font-medium ${
                     selectedRun.status === "FINISHED"
@@ -469,19 +459,19 @@ export default function ExperimentCenter() {
                 </span>
               </div>
               <div>
-                <p className="text-xs text-on-surface-variant">Started</p>
+                <p className="text-xs text-on-surface-variant">{t('common.started')}</p>
                 <p className="font-body-sm text-on-surface">
                   {formatTime(selectedRun.start_time)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-on-surface-variant">Ended</p>
+                <p className="text-xs text-on-surface-variant">{t('common.ended')}</p>
                 <p className="font-body-sm text-on-surface">
                   {formatTime(selectedRun.end_time)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-on-surface-variant">Run ID</p>
+                <p className="text-xs text-on-surface-variant">{t('experiment.runId')}</p>
                 <p className="font-body-sm text-on-surface font-mono text-xs truncate">
                   {selectedRun.run_id}
                 </p>
@@ -495,12 +485,12 @@ export default function ExperimentCenter() {
             <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-outline-variant">
                 <h3 className="font-body-sm text-on-surface font-semibold">
-                  Parameters ({Object.keys(selectedRun.params).length})
+                  {t('experiment.parameters')} ({Object.keys(selectedRun.params).length})
                 </h3>
               </div>
               {Object.keys(selectedRun.params).length === 0 ? (
                 <div className="p-4 text-center text-on-surface-variant text-sm">
-                  No parameters
+                  {t('experiment.noParameters')}
                 </div>
               ) : (
                 <div className="max-h-64 overflow-y-auto">
@@ -526,12 +516,12 @@ export default function ExperimentCenter() {
             <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-outline-variant">
                 <h3 className="font-body-sm text-on-surface font-semibold">
-                  Metrics ({Object.keys(selectedRun.metrics).length})
+                  {t('common.metrics')} ({Object.keys(selectedRun.metrics).length})
                 </h3>
               </div>
               {Object.keys(selectedRun.metrics).length === 0 ? (
                 <div className="p-4 text-center text-on-surface-variant text-sm">
-                  No metrics
+                  {t('experiment.noMetrics')}
                 </div>
               ) : (
                 <div className="max-h-64 overflow-y-auto">
@@ -558,7 +548,7 @@ export default function ExperimentCenter() {
           <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-outline-variant">
               <h3 className="font-body-sm text-on-surface font-semibold">
-                Artifacts
+                {t('experiment.artifacts')}
                 {artifactPath && (
                   <span className="text-on-surface-variant font-normal ml-2">
                     / {artifactPath}
@@ -571,11 +561,10 @@ export default function ExperimentCenter() {
                 <span className="material-symbols-outlined text-4xl mb-2 block">
                   folder_open
                 </span>
-                <p className="font-body-sm">No artifacts</p>
+                <p className="font-body-sm">{t('experiment.noArtifacts')}</p>
               </div>
             ) : (
               <div className="divide-y divide-outline-variant">
-                {/* Navigate up button */}
                 {artifactPath && (
                   <button
                     onClick={() => {
@@ -619,12 +608,12 @@ export default function ExperimentCenter() {
             )}
           </div>
 
-          {/* Tags (collapsed by default) */}
+          {/* Tags */}
           {Object.keys(selectedRun.tags).length > 0 && (
             <details className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
               <summary className="px-4 py-3 cursor-pointer hover:bg-surface-container-low">
                 <span className="font-body-sm text-on-surface font-semibold">
-                  Tags ({Object.keys(selectedRun.tags).length})
+                  {t('experiment.tags')} ({Object.keys(selectedRun.tags).length})
                 </span>
               </summary>
               <div className="border-t border-outline-variant max-h-48 overflow-y-auto">

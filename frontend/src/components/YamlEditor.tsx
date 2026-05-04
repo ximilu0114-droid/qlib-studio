@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "../i18n";
 
 interface Props {
   filename: string | null;
@@ -15,6 +16,7 @@ export default function YamlEditor({
 }: Props) {
   const [editedContent, setEditedContent] = useState(content);
   const [dirty, setDirty] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setEditedContent(content);
@@ -37,7 +39,7 @@ export default function YamlEditor({
           <span className="material-symbols-outlined text-4xl mb-2">
             code
           </span>
-          <p className="font-body-sm">Select a workflow template to edit</p>
+          <p className="font-body-sm">{t('workflow.selectTemplate')}</p>
         </div>
       </div>
     );
@@ -51,7 +53,7 @@ export default function YamlEditor({
             {filename}
           </h3>
           {dirty && (
-            <span className="text-xs text-amber-600 ml-2">(modified)</span>
+            <span className="text-xs text-amber-600 ml-2">{t('workflow.modified')}</span>
           )}
         </div>
         <button
@@ -62,7 +64,7 @@ export default function YamlEditor({
           <span className="material-symbols-outlined text-[16px] mr-1">
             save
           </span>
-          {saving ? "Saving..." : "Save"}
+          {saving ? t('common.saving') : t('common.save')}
         </button>
       </div>
       <textarea

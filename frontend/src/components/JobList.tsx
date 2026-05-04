@@ -1,4 +1,5 @@
 import type { Job } from "../types/api";
+import { useTranslation } from "../i18n";
 
 interface Props {
   jobs: Job[];
@@ -31,15 +32,17 @@ function formatTime(dateStr: string | null): string {
 }
 
 export default function JobList({ jobs, onViewLogs, onCancel }: Props) {
+  const { t } = useTranslation();
+
   if (jobs.length === 0) {
     return (
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-8 text-center">
         <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">
           work
         </span>
-        <p className="font-body-sm text-on-surface-variant">No jobs yet</p>
+        <p className="font-body-sm text-on-surface-variant">{t('jobList.noJobsYet')}</p>
         <p className="text-xs text-on-surface-variant mt-1">
-          Run a workflow to see jobs here
+          {t('jobList.runWorkflowToSee')}
         </p>
       </div>
     );
@@ -48,32 +51,32 @@ export default function JobList({ jobs, onViewLogs, onCancel }: Props) {
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
       <div className="px-4 py-3 border-b border-outline-variant">
-        <h3 className="font-body-sm text-on-surface font-semibold">Jobs</h3>
+        <h3 className="font-body-sm text-on-surface font-semibold">{t('jobList.jobs')}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-outline-variant">
               <th className="px-4 py-3 text-left font-body-sm text-on-surface-variant font-medium">
-                ID
+                {t('common.id')}
               </th>
               <th className="px-4 py-3 text-left font-body-sm text-on-surface-variant font-medium">
-                Type
+                {t('common.type')}
               </th>
               <th className="px-4 py-3 text-left font-body-sm text-on-surface-variant font-medium">
-                Status
+                {t('common.status')}
               </th>
               <th className="px-4 py-3 text-left font-body-sm text-on-surface-variant font-medium">
-                Workflow Path
+                {t('jobList.workflowPath')}
               </th>
               <th className="px-4 py-3 text-left font-body-sm text-on-surface-variant font-medium">
-                Started
+                {t('common.started')}
               </th>
               <th className="px-4 py-3 text-left font-body-sm text-on-surface-variant font-medium">
-                Finished
+                {t('common.finished')}
               </th>
               <th className="px-4 py-3 text-right font-body-sm text-on-surface-variant font-medium">
-                Actions
+                {t('common.actions')}
               </th>
             </tr>
           </thead>
@@ -104,14 +107,14 @@ export default function JobList({ jobs, onViewLogs, onCancel }: Props) {
                       onClick={() => onViewLogs(job.id)}
                       className="text-primary hover:bg-primary-container px-2 py-1 rounded text-xs font-medium"
                     >
-                      Logs
+                      {t('common.logs')}
                     </button>
                     {job.status === "running" && (
                       <button
                         onClick={() => onCancel(job.id)}
                         className="text-red-600 hover:bg-red-50 px-2 py-1 rounded text-xs font-medium"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                     )}
                   </div>

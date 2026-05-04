@@ -254,7 +254,10 @@ export const en = {
   'lang.zhCN': '中文',
 } as const;
 
-export const zhCN: typeof en = {
+export type TranslationKey = keyof typeof en;
+export type Language = 'en' | 'zh-CN';
+
+export const zhCN: Record<TranslationKey, string> = {
   // Navigation
   'nav.workbench': '工作台',
   'nav.workflows': '工作流',
@@ -508,7 +511,4 @@ export const zhCN: typeof en = {
   'lang.label': '语言',
   'lang.en': 'English',
   'lang.zhCN': '中文',
-} as const;
-
-export type TranslationKey = keyof typeof en;
-export type Language = 'en' | 'zh-CN';
+};
