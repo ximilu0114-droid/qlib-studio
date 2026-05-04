@@ -25,6 +25,8 @@ def _migrate_jobs_table() -> None:
         migrations.append("ALTER TABLE jobs ADD COLUMN type TEXT DEFAULT 'qrun'")
     if "working_dir" not in columns:
         migrations.append("ALTER TABLE jobs ADD COLUMN working_dir TEXT DEFAULT '.'")
+    if "scenario" not in columns:
+        migrations.append("ALTER TABLE jobs ADD COLUMN scenario TEXT")
 
     if migrations:
         with engine.begin() as conn:

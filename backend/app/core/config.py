@@ -12,6 +12,12 @@ CONFIGS_DIR.mkdir(parents=True, exist_ok=True)
 WORKFLOWS_DIR = STORAGE_DIR / "workflows"
 WORKFLOWS_DIR.mkdir(exist_ok=True)
 
+RDAGENT_LOGS_DIR = STORAGE_DIR / "logs" / "rdagent"
+RDAGENT_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+RDAGENT_WORKING_DIR = PROJECT_ROOT
+RDAGENT_OUTPUT_DIR = PROJECT_ROOT / "log"
+
 DEFAULT_QLIB_DATA_PATH = str(Path.home() / ".qlib" / "qlib_data" / "cn_data")
 
 

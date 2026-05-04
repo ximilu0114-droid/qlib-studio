@@ -1,0 +1,38 @@
+- generic [ref=e3]:
+  - navigation [ref=e7]:
+    - generic [ref=e8]:
+      - heading "Qlib Studio" [level=1] [ref=e9]
+      - generic [ref=e10]: v0.2.0-alpha
+    - generic [ref=e11]:
+      - button "terminal Workbench" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: terminal
+        - text: Workbench
+      - button "play_circle Workflows" [ref=e14] [cursor=pointer]:
+        - generic [ref=e15]: play_circle
+        - text: Workflows
+      - button "science Experiments" [ref=e16] [cursor=pointer]:
+        - generic [ref=e17]: science
+        - text: Experiments
+      - button "assessment Backtest Analyzer" [active] [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: assessment
+        - text: Backtest Analyzer
+      - generic [ref=e20]:
+        - generic [ref=e21]: database
+        - text: Datasets
+      - generic [ref=e22]:
+        - generic [ref=e23]: hub
+        - text: Models
+      - generic [ref=e24]:
+        - generic [ref=e25]: settings
+        - text: System Settings
+  - main [ref=e26]:
+    - generic [ref=e27]:
+      - generic [ref=e29]:
+        - heading "Backtest Analyzer" [level=2] [ref=e110]
+        - paragraph [ref=e31]: Analyze backtest performance and risk
+      - generic [ref=e112]:
+        - heading "Select Experiment (0)" [level=3] [ref=e114]
+        - generic [ref=e115]:
+          - generic [ref=e116]: science
+          - paragraph [ref=e117]: No experiments found
+          - paragraph [ref=e118]: Run a Qlib workflow to create experiments

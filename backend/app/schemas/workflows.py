@@ -59,6 +59,7 @@ class JobCreateRequest(BaseModel):
 class JobResponse(BaseModel):
     id: int
     type: str
+    scenario: Optional[str] = None
     status: str
     workflow_path: str
     working_dir: str

@@ -1,0 +1,62 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Qlib Studio" [level=1] [ref=e6]
+      - generic [ref=e7]: v0.2.0-alpha
+    - generic [ref=e8]:
+      - button "terminal Workbench" [ref=e9] [cursor=pointer]:
+        - generic [ref=e10]: terminal
+        - text: Workbench
+      - button "play_circle Workflows" [ref=e11] [cursor=pointer]:
+        - generic [ref=e12]: play_circle
+        - text: Workflows
+      - button "science Experiments" [active] [ref=e13] [cursor=pointer]:
+        - generic [ref=e14]: science
+        - text: Experiments
+      - button "assessment Backtest Analyzer" [ref=e15] [cursor=pointer]:
+        - generic [ref=e16]: assessment
+        - text: Backtest Analyzer
+      - button "memory RD-Agent Center" [ref=e17] [cursor=pointer]:
+        - generic [ref=e18]: memory
+        - text: RD-Agent Center
+      - generic [ref=e19]:
+        - generic [ref=e20]: database
+        - text: Datasets
+      - generic [ref=e21]:
+        - generic [ref=e22]: hub
+        - text: Models
+      - generic [ref=e23]:
+        - generic [ref=e24]: settings
+        - text: System Settings
+  - main [ref=e25]:
+    - generic [ref=e26]:
+      - generic [ref=e28]:
+        - heading "Experiment Center" [level=2] [ref=e107]
+        - paragraph [ref=e30]: View MLflow experiment results
+      - generic [ref=e108]:
+        - generic [ref=e109]:
+          - generic [ref=e110]:
+            - heading "MLflow Configuration" [level=3] [ref=e111]
+            - generic [ref=e112]: Connected
+          - generic [ref=e113]:
+            - textbox "file:./mlruns or https://remote-server" [ref=e114]: file:/Users/ximilu/Documents/qlib studio/mlruns
+            - button "Save" [ref=e115] [cursor=pointer]
+          - generic [ref=e116]:
+            - paragraph [ref=e117]:
+              - text: "Resolved path:"
+              - code [ref=e118]: /Users/ximilu/Documents/qlib studio/mlruns
+            - paragraph [ref=e119]: 2 experiment(s), 0 run(s)
+          - paragraph [ref=e120]: "Accepts: file:./mlruns, /absolute/path, or https://remote-server"
+        - generic [ref=e121]:
+          - heading "Experiments (2)" [level=3] [ref=e123]
+          - generic [ref=e124]:
+            - 'button "workflow 0 runs · ID: 756406134755608493 chevron_right" [ref=e125] [cursor=pointer]':
+              - generic [ref=e126]:
+                - paragraph [ref=e127]: workflow
+                - paragraph [ref=e128]: "0 runs · ID: 756406134755608493"
+              - generic [ref=e129]: chevron_right
+            - 'button "Default 0 runs · ID: 0 chevron_right" [ref=e130] [cursor=pointer]':
+              - generic [ref=e131]:
+                - paragraph [ref=e132]: Default
+                - paragraph [ref=e133]: "0 runs · ID: 0"
+              - generic [ref=e134]: chevron_right

@@ -59,15 +59,35 @@ def create_default_templates() -> None:
   provider_uri: "~/.qlib/qlib_data/cn_data"
   region: cn
 
-data_handler_config:
+market: &market csi300
+benchmark: &benchmark SH000300
+
+data_handler_config: &data_handler_config
   start_time: 2008-01-01
   end_time: 2020-12-31
   fit_start_time: 2008-01-01
   fit_end_time: 2019-12-31
-  instruments: csi300
+  instruments: *market
 
-market: csi300
-benchmark: SH000300
+port_analysis_config: &port_analysis_config
+  strategy:
+    class: TopkDropoutStrategy
+    module_path: qlib.contrib.strategy
+    kwargs:
+      signal: <PRED>
+      topk: 50
+      n_drop: 5
+  backtest:
+    start_time: 2020-07-01
+    end_time: 2020-12-31
+    account: 100000000
+    benchmark: *benchmark
+    exchange_kwargs:
+      limit_threshold: 0.095
+      deal_price: close
+      open_cost: 0.0005
+      close_cost: 0.0015
+      min_cost: 5
 
 task:
   model:
@@ -90,16 +110,26 @@ task:
       handler:
         class: Alpha158
         module_path: qlib.contrib.data.handler
-        kwargs:
-          start_time: 2008-01-01
-          end_time: 2020-12-31
-          fit_start_time: 2008-01-01
-          fit_end_time: 2019-12-31
-          instruments: csi300
+        kwargs: *data_handler_config
       segments:
         train: [2008-01-01, 2019-12-31]
         valid: [2020-01-01, 2020-06-30]
         test: [2020-07-01, 2020-12-31]
+  record:
+    - class: SignalRecord
+      module_path: qlib.workflow.record_temp
+      kwargs:
+        model: <MODEL>
+        dataset: <DATASET>
+    - class: SigAnaRecord
+      module_path: qlib.workflow.record_temp
+      kwargs:
+        ana_long_short: False
+        ann_scaler: 252
+    - class: PortAnaRecord
+      module_path: qlib.workflow.record_temp
+      kwargs:
+        config: *port_analysis_config
 """
 
     train_yaml = """qlib_init:
@@ -144,14 +174,47 @@ task:
         train: [2008-01-01, 2019-12-31]
         valid: [2020-01-01, 2020-06-30]
         test: [2020-07-01, 2020-12-31]
+  record:
+    - class: SignalRecord
+      module_path: qlib.workflow.record_temp
+      kwargs:
+        model: <MODEL>
+        dataset: <DATASET>
 """
 
     backtest_yaml = """qlib_init:
   provider_uri: "~/.qlib/qlib_data/cn_data"
   region: cn
 
-market: csi300
-benchmark: SH000300
+market: &market csi300
+benchmark: &benchmark SH000300
+
+data_handler_config: &data_handler_config
+  start_time: 2008-01-01
+  end_time: 2020-12-31
+  fit_start_time: 2008-01-01
+  fit_end_time: 2019-12-31
+  instruments: *market
+
+port_analysis_config: &port_analysis_config
+  strategy:
+    class: TopkDropoutStrategy
+    module_path: qlib.contrib.strategy
+    kwargs:
+      signal: <PRED>
+      topk: 50
+      n_drop: 5
+  backtest:
+    start_time: 2020-07-01
+    end_time: 2020-12-31
+    account: 100000000
+    benchmark: *benchmark
+    exchange_kwargs:
+      limit_threshold: 0.095
+      deal_price: close
+      open_cost: 0.0005
+      close_cost: 0.0015
+      min_cost: 5
 
 task:
   model:
@@ -174,16 +237,26 @@ task:
       handler:
         class: Alpha158
         module_path: qlib.contrib.data.handler
-        kwargs:
-          start_time: 2008-01-01
-          end_time: 2020-12-31
-          fit_start_time: 2008-01-01
-          fit_end_time: 2019-12-31
-          instruments: csi300
+        kwargs: *data_handler_config
       segments:
         train: [2008-01-01, 2019-12-31]
         valid: [2020-01-01, 2020-06-30]
         test: [2020-07-01, 2020-12-31]
+  record:
+    - class: SignalRecord
+      module_path: qlib.workflow.record_temp
+      kwargs:
+        model: <MODEL>
+        dataset: <DATASET>
+    - class: SigAnaRecord
+      module_path: qlib.workflow.record_temp
+      kwargs:
+        ana_long_short: False
+        ann_scaler: 252
+    - class: PortAnaRecord
+      module_path: qlib.workflow.record_temp
+      kwargs:
+        config: *port_analysis_config
 """
 
     (WORKFLOWS_DIR / "workflow.yaml").write_text(workflow_yaml)

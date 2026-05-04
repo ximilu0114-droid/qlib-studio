@@ -74,3 +74,12 @@ class ArtifactListResponse(BaseModel):
     run_id: str
     path: str
     artifacts: list[ArtifactItem]
+
+
+class MlflowStatusResponse(BaseModel):
+    mlflow_tracking_uri: str
+    resolved_mlruns_path: str
+    path_exists: bool
+    experiment_count: int
+    run_count: int
+    warnings: list[str]

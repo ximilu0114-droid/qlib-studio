@@ -1,0 +1,68 @@
+- generic [ref=e3]:
+  - navigation [ref=e7]:
+    - generic [ref=e8]:
+      - heading "Qlib Studio" [level=1] [ref=e9]
+      - generic [ref=e10]: v0.2.0-alpha
+    - generic [ref=e11]:
+      - button "terminal Workbench" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: terminal
+        - text: Workbench
+      - button "play_circle Workflows" [ref=e14] [cursor=pointer]:
+        - generic [ref=e15]: play_circle
+        - text: Workflows
+      - button "science Experiments" [active] [ref=e16] [cursor=pointer]:
+        - generic [ref=e17]: science
+        - text: Experiments
+      - button "assessment Backtest Analyzer" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: assessment
+        - text: Backtest Analyzer
+      - button "memory RD-Agent Center" [ref=e20] [cursor=pointer]:
+        - generic [ref=e21]: memory
+        - text: RD-Agent Center
+      - generic [ref=e22]:
+        - generic [ref=e23]: database
+        - text: Datasets
+      - generic [ref=e24]:
+        - generic [ref=e25]: hub
+        - text: Models
+      - generic [ref=e26]:
+        - generic [ref=e27]: settings
+        - text: System Settings
+  - main [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e31]:
+        - heading "Experiment Center" [level=2] [ref=e110]
+        - paragraph [ref=e33]: View MLflow experiment results
+      - generic [ref=e111]:
+        - generic [ref=e113]:
+          - generic [ref=e114]: warning
+          - paragraph [ref=e116]: 2 experiment(s) found with 0 runs. Make sure Workflow Runner and Experiment Center use the same MLflow tracking URI.
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - heading "MLflow Configuration" [level=3] [ref=e119]
+            - generic [ref=e120]: Connected
+          - generic [ref=e121]:
+            - textbox "file:./mlruns or https://remote-server" [ref=e122]: file:/Users/ximilu/Documents/qlib studio/mlruns
+            - button "Save" [ref=e123] [cursor=pointer]
+          - generic [ref=e124]:
+            - paragraph [ref=e125]:
+              - text: "Resolved path:"
+              - code [ref=e126]: /Users/ximilu/Documents/qlib studio/mlruns
+            - paragraph [ref=e127]: 2 experiment(s), 0 run(s)
+          - paragraph [ref=e128]: "Accepts: file:./mlruns, /absolute/path, or https://remote-server"
+        - generic [ref=e129]:
+          - heading "Experiments (2)" [level=3] [ref=e131]
+          - paragraph [ref=e133]:
+            - text: "No runs found. Make sure Workflow Runner and Experiment Center use the same MLflow tracking URI. Check that qrun is writing to:"
+            - code [ref=e134]: /Users/ximilu/Documents/qlib studio/mlruns
+          - generic [ref=e135]:
+            - 'button "workflow 0 runs · ID: 756406134755608493 chevron_right" [ref=e136] [cursor=pointer]':
+              - generic [ref=e137]:
+                - paragraph [ref=e138]: workflow
+                - paragraph [ref=e139]: "0 runs · ID: 756406134755608493"
+              - generic [ref=e140]: chevron_right
+            - 'button "Default 0 runs · ID: 0 chevron_right" [ref=e141] [cursor=pointer]':
+              - generic [ref=e142]:
+                - paragraph [ref=e143]: Default
+                - paragraph [ref=e144]: "0 runs · ID: 0"
+              - generic [ref=e145]: chevron_right

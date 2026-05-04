@@ -1,0 +1,103 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Qlib Studio" [level=1] [ref=e6]
+      - generic [ref=e7]: v0.2.0-alpha
+    - generic [ref=e8]:
+      - button "terminal Workbench" [ref=e9] [cursor=pointer]:
+        - generic [ref=e10]: terminal
+        - text: Workbench
+      - button "play_circle Workflows" [ref=e11] [cursor=pointer]:
+        - generic [ref=e12]: play_circle
+        - text: Workflows
+      - button "science Experiments" [ref=e13] [cursor=pointer]:
+        - generic [ref=e14]: science
+        - text: Experiments
+      - button "assessment Backtest Analyzer" [ref=e15] [cursor=pointer]:
+        - generic [ref=e16]: assessment
+        - text: Backtest Analyzer
+      - button "memory RD-Agent Center" [ref=e17] [cursor=pointer]:
+        - generic [ref=e18]: memory
+        - text: RD-Agent Center
+      - generic [ref=e19]:
+        - generic [ref=e20]: database
+        - text: Datasets
+      - generic [ref=e21]:
+        - generic [ref=e22]: hub
+        - text: Models
+      - generic [ref=e23]:
+        - generic [ref=e24]: settings
+        - text: System Settings
+  - main [ref=e25]:
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - heading "Qlib Studio Dashboard" [level=2] [ref=e29]
+          - paragraph [ref=e30]: Local Quant Research Workbench
+        - button "refresh Refresh Status" [ref=e31] [cursor=pointer]:
+          - generic [ref=e32]: refresh
+          - text: Refresh Status
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: check_circle
+          - generic [ref=e36]: System Ready
+        - generic [ref=e37]: ALL SYSTEMS GO
+      - generic [ref=e38]:
+        - heading "System Status" [level=3] [ref=e39]
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]: Backend Status
+            - generic [ref=e45]: Online
+          - generic [ref=e46]:
+            - generic [ref=e47]: Python Version
+            - generic [ref=e50]: 3.10.20
+          - generic [ref=e51]:
+            - generic [ref=e52]: Qlib Installed
+            - generic [ref=e53]:
+              - generic [ref=e54]: check
+              - generic [ref=e55]: "Yes"
+          - generic [ref=e56]:
+            - generic [ref=e57]: Qlib Version
+            - generic [ref=e60]: 0.9.7
+          - generic [ref=e61]:
+            - generic [ref=e62]: MLflow Installed
+            - generic [ref=e63]:
+              - generic [ref=e64]: check
+              - generic [ref=e65]: "Yes"
+          - generic [ref=e66]:
+            - generic [ref=e67]: MLflow Version
+            - generic [ref=e70]: 3.11.1
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - generic [ref=e73]:
+            - heading "Qlib Data Path" [level=3] [ref=e74]
+            - paragraph [ref=e75]: This path should point to the Qlib data directory.
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - textbox [ref=e78]: /Users/ximilu/.qlib/qlib_data/cn_data
+              - button "Save" [ref=e79] [cursor=pointer]
+            - generic [ref=e80]:
+              - generic [ref=e81]: folder_open
+              - generic [ref=e82]: Current path verified
+        - generic [ref=e83]:
+          - heading "Data Health" [level=3] [ref=e85]
+          - list [ref=e87]:
+            - listitem [ref=e88]:
+              - generic [ref=e89]: Data path exists
+              - generic [ref=e90]: check_circle
+            - listitem [ref=e91]:
+              - generic [ref=e92]: calendars folder exists
+              - generic [ref=e93]: check_circle
+            - listitem [ref=e94]:
+              - generic [ref=e95]: instruments folder exists
+              - generic [ref=e96]: check_circle
+            - listitem [ref=e97]:
+              - generic [ref=e98]: features folder exists
+              - generic [ref=e99]: check_circle
+      - generic [ref=e100]:
+        - heading "System Warnings" [level=3] [ref=e101]
+        - generic [ref=e102]:
+          - generic [ref=e103]: info
+          - generic [ref=e104]:
+            - paragraph [ref=e105]: No active warnings.
+            - paragraph [ref=e106]: The system is operating within expected parameters.

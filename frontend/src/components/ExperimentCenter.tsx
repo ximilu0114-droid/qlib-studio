@@ -4,6 +4,7 @@ import type {
   RunSummary,
   RunDetailResponse,
   ArtifactItem,
+  MlflowStatusResponse,
 } from "../types/api";
 import {
   fetchSettings,
@@ -12,6 +13,7 @@ import {
   fetchRunDetail,
   fetchRunArtifacts,
   saveMlflowTrackingUri,
+  fetchMlflowStatus,
 } from "../api/client";
 
 type View = "experiments" | "runs" | "detail";
@@ -28,6 +30,7 @@ export default function ExperimentCenter() {
   const [artifactPath, setArtifactPath] = useState("");
   const [loading, setLoading] = useState(true);
   const [trackingUriInput, setTrackingUriInput] = useState("");
+  const [mlflowStatus, setMlflowStatus] = useState<MlflowStatusResponse | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
   const getErrorMessage = (error: unknown) =>
@@ -52,10 +55,16 @@ export default function ExperimentCenter() {
   // Load experiments
   const loadExperiments = useCallback(async () => {
     try {
-      const data = await fetchExperiments();
+      const [data, status] = await Promise.all([
+        fetchExperiments(),
+        fetchMlflowStatus().catch(() => null),
+      ]);
       setExperiments(data.experiments);
-      setWarnings(data.warnings || []);
+      setWarnings(
+        Array.from(new Set([...(data.warnings || []), ...(status?.warnings || [])])),
+      );
       setMlflowAvailable(true);
+      if (status) setMlflowStatus(status);
       clearErrors();
     } catch (error) {
       console.error("Failed to load experiments:", error);
@@ -79,7 +88,8 @@ export default function ExperimentCenter() {
   const handleSaveTrackingUri = async () => {
     if (!trackingUriInput.trim()) return;
     try {
-      await saveMlflowTrackingUri(trackingUriInput.trim());
+      const settings = await saveMlflowTrackingUri(trackingUriInput.trim());
+      setTrackingUriInput(settings.mlflow_tracking_uri);
       await loadExperiments();
       clearErrors();
     } catch (error) {
@@ -169,6 +179,9 @@ export default function ExperimentCenter() {
     return value.toFixed(6);
   };
 
+  const noRunsFound =
+    experiments.length > 0 && experiments.every((exp) => exp.run_count === 0);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -254,6 +267,19 @@ export default function ExperimentCenter() {
             Save
           </button>
         </div>
+        {mlflowStatus && (
+          <div className="mt-2 space-y-1">
+            <p className="text-on-surface-variant font-body-sm text-xs">
+              Resolved path: <code className="bg-surface-container-low px-1 rounded">{mlflowStatus.resolved_mlruns_path}</code>
+              {!mlflowStatus.path_exists && (
+                <span className="text-error ml-2">(does not exist)</span>
+              )}
+            </p>
+            <p className="text-on-surface-variant font-body-sm text-xs">
+              {mlflowStatus.experiment_count} experiment(s), {mlflowStatus.run_count} run(s)
+            </p>
+          </div>
+        )}
         <p className="text-on-surface-variant font-body-sm mt-2">
           Accepts: file:./mlruns, /absolute/path, or https://remote-server
         </p>
@@ -293,7 +319,19 @@ export default function ExperimentCenter() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-outline-variant">
+            <>
+              {noRunsFound && (
+                  <div className="px-4 py-3 bg-yellow-50 border-b border-yellow-200">
+                    <p className="text-xs text-yellow-800">
+                      No runs found. Make sure Workflow Runner and Experiment Center use the same
+                      MLflow tracking URI. Check that qrun is writing to:{" "}
+                      <code className="bg-yellow-100 px-1 rounded">
+                        {mlflowStatus?.resolved_mlruns_path || trackingUriInput}
+                      </code>
+                    </p>
+                  </div>
+                )}
+              <div className="divide-y divide-outline-variant">
               {experiments.map((exp) => (
                 <button
                   key={exp.experiment_id}
@@ -314,6 +352,7 @@ export default function ExperimentCenter() {
                 </button>
               ))}
             </div>
+            </>
           )}
         </div>
       )}

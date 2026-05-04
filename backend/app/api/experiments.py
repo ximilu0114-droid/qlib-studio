@@ -1,5 +1,7 @@
 """Experiment Center API endpoints."""
 
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,6 +10,7 @@ from app.schemas.experiments import (
     ArtifactListResponse,
     ExperimentDetailResponse,
     ExperimentListResponse,
+    MlflowStatusResponse,
     RunDetailResponse,
     RunListResponse,
     RunMetricsResponse,
@@ -116,3 +119,48 @@ def list_artifacts(run_id: str, path: str = "", db: Session = Depends(get_db)):
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list artifacts: {e}")
+
+
+@router.get("/mlflow/status", response_model=MlflowStatusResponse)
+def mlflow_status(db: Session = Depends(get_db)):
+    """Diagnostic endpoint: show resolved MLflow tracking URI and status."""
+    tracking_uri = _get_tracking_uri(db)
+    warnings: list[str] = []
+
+    resolved_path = ""
+    if tracking_uri and tracking_uri.startswith("file:"):
+        resolved_path = tracking_uri[5:]
+    elif tracking_uri:
+        resolved_path = tracking_uri
+
+    path_exists = Path(resolved_path).is_dir() if resolved_path else False
+    if not path_exists and resolved_path:
+        warnings.append(f"MLflow tracking path does not exist: {resolved_path}")
+
+    experiment_count = 0
+    run_count = 0
+
+    if tracking_uri:
+        try:
+            data = experiment_service.list_experiments(tracking_uri)
+            experiments = data.get("experiments", [])
+            experiment_count = len(experiments)
+            run_count = sum(exp.get("run_count", 0) for exp in experiments)
+            warnings.extend(data.get("warnings", []))
+        except Exception as e:
+            warnings.append(f"Failed to query MLflow: {e}")
+
+    if experiment_count > 0 and run_count == 0:
+        warnings.append(
+            f"{experiment_count} experiment(s) found with 0 runs. "
+            "Make sure Workflow Runner and Experiment Center use the same MLflow tracking URI."
+        )
+
+    return MlflowStatusResponse(
+        mlflow_tracking_uri=tracking_uri or "",
+        resolved_mlruns_path=resolved_path,
+        path_exists=path_exists,
+        experiment_count=experiment_count,
+        run_count=run_count,
+        warnings=warnings,
+    )

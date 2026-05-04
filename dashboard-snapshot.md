@@ -1,0 +1,102 @@
+- generic [ref=e3]:
+  - navigation [ref=e7]:
+    - generic [ref=e8]:
+      - heading "Qlib Studio" [level=1] [ref=e9]
+      - generic [ref=e10]: v0.2.0-alpha
+    - generic [ref=e11]:
+      - button "terminal Workbench" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: terminal
+        - text: Workbench
+      - button "play_circle Workflows" [ref=e14] [cursor=pointer]:
+        - generic [ref=e15]: play_circle
+        - text: Workflows
+      - button "science Experiments" [ref=e16] [cursor=pointer]:
+        - generic [ref=e17]: science
+        - text: Experiments
+      - button "assessment Backtest Analyzer" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: assessment
+        - text: Backtest Analyzer
+      - generic [ref=e20]:
+        - generic [ref=e21]: database
+        - text: Datasets
+      - generic [ref=e22]:
+        - generic [ref=e23]: hub
+        - text: Models
+      - generic [ref=e24]:
+        - generic [ref=e25]: settings
+        - text: System Settings
+  - main [ref=e26]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - heading "Qlib Studio Dashboard" [level=2] [ref=e30]
+          - paragraph [ref=e31]: Local Quant Research Workbench
+        - button "refresh Refresh Status" [ref=e32] [cursor=pointer]:
+          - generic [ref=e33]: refresh
+          - text: Refresh Status
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: error
+          - generic [ref=e37]: System Not Ready
+        - generic [ref=e38]: ISSUES DETECTED
+      - generic [ref=e39]:
+        - heading "System Status" [level=3] [ref=e40]
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]: Backend Status
+            - generic [ref=e46]: Online
+          - generic [ref=e47]:
+            - generic [ref=e48]: Python Version
+            - generic [ref=e51]: 3.13.9
+          - generic [ref=e52]:
+            - generic [ref=e53]: Qlib Installed
+            - generic [ref=e54]:
+              - generic [ref=e55]: check
+              - generic [ref=e56]: "No"
+          - generic [ref=e57]:
+            - generic [ref=e58]: Qlib Version
+            - generic [ref=e61]: —
+          - generic [ref=e62]:
+            - generic [ref=e63]: MLflow Installed
+            - generic [ref=e64]:
+              - generic [ref=e65]: check
+              - generic [ref=e66]: "No"
+          - generic [ref=e67]:
+            - generic [ref=e68]: MLflow Version
+            - generic [ref=e71]: —
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - heading "Qlib Data Path" [level=3] [ref=e75]
+            - paragraph [ref=e76]: This path should point to the Qlib data directory.
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - textbox [ref=e79]: /Users/ximilu/.qlib/qlib_data/cn_data
+              - button "Save" [ref=e80] [cursor=pointer]
+            - generic [ref=e81]:
+              - generic [ref=e82]: folder_open
+              - generic [ref=e83]: Current path verified
+        - generic [ref=e84]:
+          - heading "Data Health" [level=3] [ref=e86]
+          - list [ref=e88]:
+            - listitem [ref=e89]:
+              - generic [ref=e90]: Data path exists
+              - generic [ref=e91]: check_circle
+            - listitem [ref=e92]:
+              - generic [ref=e93]: calendars folder exists
+              - generic [ref=e94]: check_circle
+            - listitem [ref=e95]:
+              - generic [ref=e96]: instruments folder exists
+              - generic [ref=e97]: check_circle
+            - listitem [ref=e98]:
+              - generic [ref=e99]: features folder exists
+              - generic [ref=e100]: check_circle
+      - generic [ref=e101]:
+        - heading "System Warnings" [level=3] [ref=e102]
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105]: warning
+            - paragraph [ref=e106]: "qlib is not installed. Install with: pip install pyqlib"
+          - generic [ref=e107]:
+            - generic [ref=e108]: warning
+            - paragraph [ref=e109]: "mlflow is not installed. Install with: pip install mlflow"
