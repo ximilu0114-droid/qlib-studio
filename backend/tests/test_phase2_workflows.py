@@ -12,7 +12,7 @@ Path("/tmp/qlib_studio_phase2_tests.sqlite").unlink(missing_ok=True)
 import pytest
 from fastapi.testclient import TestClient
 
-from app.core.config import WORKFLOWS_DIR
+from app.core.config import PROJECT_ROOT, WORKFLOWS_DIR
 from app.main import app
 
 
@@ -93,6 +93,106 @@ def test_missing_qrun_fails_gracefully(client, workflow_name, monkeypatch, tmp_p
     assert job["status"] == "failed"
     assert job["exit_code"] == -1
     assert "qrun' command not found" in logs
+
+
+def test_mlflow_tracking_uri_is_normalized_and_reported(client, tmp_path):
+    cases = [
+        ("file:./mlruns", PROJECT_ROOT / "mlruns"),
+        ("./mlruns", PROJECT_ROOT / "mlruns"),
+        (str(tmp_path / "absolute_mlruns"), (tmp_path / "absolute_mlruns").resolve()),
+    ]
+
+    for raw_uri, expected_path in cases:
+        response = client.post(
+            "/api/settings/mlflow-tracking-uri",
+            json={"mlflow_tracking_uri": raw_uri},
+        )
+        assert response.status_code == 200
+        assert response.json()["mlflow_tracking_uri"] == f"file:{expected_path}"
+
+        settings = client.get("/api/settings").json()
+        assert settings["mlflow_tracking_uri"] == f"file:{expected_path}"
+
+        status = client.get("/api/mlflow/status")
+        assert status.status_code == 200
+        body = status.json()
+        assert body["mlflow_tracking_uri"] == f"file:{expected_path}"
+        assert body["resolved_mlruns_path"] == str(expected_path)
+        assert set(body).issuperset(
+            {
+                "mlflow_tracking_uri",
+                "resolved_mlruns_path",
+                "path_exists",
+                "experiment_count",
+                "run_count",
+                "warnings",
+            }
+        )
+
+
+def test_mlflow_status_warns_when_experiments_exist_but_no_runs(client):
+    from unittest.mock import patch
+
+    with patch("app.api.experiments.experiment_service.list_experiments") as mocked:
+        mocked.return_value = {
+            "experiments": [
+                {
+                    "experiment_id": "0",
+                    "name": "Default",
+                    "artifact_location": "",
+                    "lifecycle_stage": "active",
+                    "run_count": 0,
+                },
+                {
+                    "experiment_id": "1",
+                    "name": "workflow",
+                    "artifact_location": "",
+                    "lifecycle_stage": "active",
+                    "run_count": 0,
+                },
+            ],
+            "warnings": [],
+        }
+
+        response = client.get("/api/mlflow/status")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["experiment_count"] == 2
+    assert body["run_count"] == 0
+    assert any("0 runs" in warning for warning in body["warnings"])
+
+
+def test_qrun_receives_normalized_mlflow_tracking_uri(client, workflow_name, monkeypatch, tmp_path):
+    mlruns_path = tmp_path / "shared_mlruns"
+    settings = client.post(
+        "/api/settings/mlflow-tracking-uri",
+        json={"mlflow_tracking_uri": str(mlruns_path)},
+    ).json()
+    normalized_uri = settings["mlflow_tracking_uri"]
+
+    bin_dir = make_fake_qrun(
+        tmp_path,
+        "#!/bin/sh\n"
+        "echo child-cwd=$(pwd)\n"
+        "echo child-mlflow=$MLFLOW_TRACKING_URI\n"
+        "exit 0\n",
+    )
+    monkeypatch.setenv("PATH", str(bin_dir))
+
+    response = client.post(
+        "/api/jobs/qrun",
+        json={"workflow_name": workflow_name, "working_dir": "."},
+    )
+    assert response.status_code == 200
+
+    job = wait_for_status(client, response.json()["job_id"], {"success", "failed"})
+    logs = client.get(f"/api/jobs/{job['id']}/logs").json()["logs"]
+
+    assert job["status"] == "success"
+    assert f"[Qlib Studio] effective working_dir: {PROJECT_ROOT}" in logs
+    assert f"[Qlib Studio] effective MLFLOW_TRACKING_URI: {normalized_uri}" in logs
+    assert f"child-mlflow={normalized_uri}" in logs
 
 
 def test_qrun_success_failure_and_logs(client, workflow_name, monkeypatch, tmp_path):

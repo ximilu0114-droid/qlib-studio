@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.config import PROJECT_ROOT, STORAGE_DIR, WORKFLOWS_DIR
 from app.db.database import SessionLocal
 from app.db.models import Job
+from app.services.settings_store import get_mlflow_tracking_uri
 
 LOGS_DIR = STORAGE_DIR / "logs" / "jobs"
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
@@ -146,15 +147,25 @@ def start_qrun_job(db: Session, workflow_name: str, working_dir: str = ".") -> J
     job.log_path = str(log_path)
     db.commit()
 
+    mlflow_tracking_uri = get_mlflow_tracking_uri(db)
+
     log_file = open(log_path, "w")
+    log_file.write(f"[Qlib Studio] effective working_dir: {run_dir}\n")
+    log_file.write(f"[Qlib Studio] effective MLFLOW_TRACKING_URI: {mlflow_tracking_uri}\n")
+    log_file.write(f"[Qlib Studio] workflow: {workflow_path}\n")
+    log_file.flush()
 
     try:
+        child_env = os.environ.copy()
+        child_env["MLFLOW_TRACKING_URI"] = mlflow_tracking_uri
+
         process = subprocess.Popen(
             ["qrun", str(workflow_path)],
             stdout=log_file,
             stderr=subprocess.STDOUT,
             cwd=run_dir,
             start_new_session=True,
+            env=child_env,
         )
 
         job.pid = process.pid

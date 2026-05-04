@@ -26,6 +26,7 @@ class Job(Base):
     type: Mapped[str] = mapped_column(String(50), default="qrun")
     workflow_path: Mapped[str] = mapped_column(String(512), nullable=False)
     working_dir: Mapped[str] = mapped_column(String(512), default=".")
+    scenario: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="pending")
     pid: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     log_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)

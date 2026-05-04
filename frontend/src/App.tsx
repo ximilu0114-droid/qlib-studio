@@ -14,6 +14,8 @@ import DataHealth from "./components/DataHealth";
 import Warnings from "./components/Warnings";
 import WorkflowRunner from "./components/WorkflowRunner";
 import ExperimentCenter from "./components/ExperimentCenter";
+import BacktestAnalyzer from "./components/BacktestAnalyzer";
+import RDAgentRunner from "./components/RDAgentRunner";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -107,6 +109,26 @@ export default function App() {
             >
               Experiments
             </button>
+            <button
+              onClick={() => setCurrentPage("backtest")}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                currentPage === "backtest"
+                  ? "bg-primary text-on-primary"
+                  : "text-on-surface-variant hover:bg-surface-container-low"
+              }`}
+            >
+              Backtest
+            </button>
+            <button
+              onClick={() => setCurrentPage("rdagent")}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                currentPage === "rdagent"
+                  ? "bg-primary text-on-primary"
+                  : "text-on-surface-variant hover:bg-surface-container-low"
+              }`}
+            >
+              RD-Agent
+            </button>
           </div>
           <button
             onClick={loadAll}
@@ -126,14 +148,22 @@ export default function App() {
                   ? "Qlib Studio Dashboard"
                   : currentPage === "workflows"
                     ? "Workflow Runner"
-                    : "Experiment Center"}
+                    : currentPage === "experiments"
+                      ? "Experiment Center"
+                      : currentPage === "backtest"
+                        ? "Backtest Analyzer"
+                        : "RD-Agent Center"}
               </h2>
               <p className="font-body-md text-body-md text-on-surface-variant mt-1">
                 {currentPage === "dashboard"
                   ? "Local Quant Research Workbench"
                   : currentPage === "workflows"
                     ? "Run and manage qrun workflows"
-                    : "View MLflow experiment results"}
+                    : currentPage === "experiments"
+                      ? "View MLflow experiment results"
+                      : currentPage === "backtest"
+                        ? "Analyze backtest performance and risk"
+                        : "Run AI-driven factor and model research tasks"}
               </p>
             </div>
             {currentPage === "dashboard" && (
@@ -190,8 +220,12 @@ export default function App() {
             </>
           ) : currentPage === "workflows" ? (
             <WorkflowRunner />
-          ) : (
+          ) : currentPage === "experiments" ? (
             <ExperimentCenter />
+          ) : currentPage === "backtest" ? (
+            <BacktestAnalyzer />
+          ) : (
+            <RDAgentRunner />
           )}
         </div>
       </main>
