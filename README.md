@@ -171,6 +171,25 @@ Each log file contains the scenario, working directory, command, and full stdout
 | Experiment tracking | MLflow |
 | Research automation | Microsoft RD-Agent, Docker |
 
+## Prerequisites & Download
+
+Qlib Studio requires the following external tools. Please install them separately as they are not included in this repository to keep it lightweight.
+
+1. **Microsoft Qlib** ([GitHub](https://github.com/microsoft/qlib))
+   ```bash
+   pip install pyqlib
+   ```
+
+2. **Microsoft RD-Agent** ([GitHub](https://github.com/microsoft/RD-Agent))
+   ```bash
+   pip install rdagent
+   ```
+
+3. **MLflow** (Optional, for Experiment Center)
+   ```bash
+   pip install mlflow
+   ```
+
 ## Quick Start
 
 ### 1. Clone the repository
