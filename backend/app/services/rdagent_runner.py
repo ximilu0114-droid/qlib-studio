@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.config import PROJECT_ROOT, RDAGENT_LOGS_DIR
 from app.db.database import SessionLocal
 from app.db.models import Job
+from app.services.secret_sanitizer import sanitize_command_args, sanitize_text
 
 VALID_SCENARIOS = {"fin_factor", "fin_model", "fin_quant", "fin_factor_report"}
 
@@ -208,10 +209,11 @@ def start_rdagent_job(
 
     log_file = open(log_path, "w")
 
-    # Log the command (safe — no secrets)
+    # Log only a redacted command. The subprocess still receives the real argv.
+    safe_cmd_for_log = sanitize_command_args(cmd)
     log_file.write(f"[rdagent] scenario: {scenario}\n")
     log_file.write(f"[rdagent] working_dir: {run_dir}\n")
-    log_file.write(f"[rdagent] command: {' '.join(cmd)}\n")
+    log_file.write(f"[rdagent] command: {' '.join(safe_cmd_for_log)}\n")
     if safe_env:
         log_file.write(f"[rdagent] extra env vars: {', '.join(sorted(safe_env.keys()))}\n")
     log_file.write("-" * 60 + "\n")
@@ -285,7 +287,7 @@ def get_rdagent_job_logs(job_id: int) -> str:
     log_path = RDAGENT_LOGS_DIR / f"{job_id}.log"
     if not log_path.exists():
         return ""
-    return log_path.read_text()
+    return sanitize_text(log_path.read_text())
 
 
 def cancel_rdagent_job(db: Session, job_id: int) -> Job:

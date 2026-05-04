@@ -16,6 +16,7 @@ import WorkflowRunner from "./components/WorkflowRunner";
 import ExperimentCenter from "./components/ExperimentCenter";
 import BacktestAnalyzer from "./components/BacktestAnalyzer";
 import RDAgentRunner from "./components/RDAgentRunner";
+import { useTranslation } from "./i18n";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,8 @@ export default function App() {
   const [qlibStatus, setQlibStatus] = useState<QlibStatusResponse | null>(null);
   const [dataPath, setDataPath] = useState("");
   const [currentPage, setCurrentPage] = useState("dashboard");
+
+  const { t, language, setLanguage } = useTranslation();
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -64,12 +67,34 @@ export default function App() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="font-body-md text-on-surface-variant">
-            Loading Qlib Studio status...
+            {t('dashboard.loadingStatus')}
           </p>
         </div>
       </div>
     );
   }
+
+  const pageTitle =
+    currentPage === "dashboard"
+      ? t('dashboard.title')
+      : currentPage === "workflows"
+        ? t('workflow.title')
+        : currentPage === "experiments"
+          ? t('experiment.title')
+          : currentPage === "backtest"
+            ? t('backtest.title')
+            : t('rdagent.title');
+
+  const pageSubtitle =
+    currentPage === "dashboard"
+      ? t('dashboard.subtitle')
+      : currentPage === "workflows"
+        ? t('workflow.subtitle')
+        : currentPage === "experiments"
+          ? t('experiment.subtitle')
+          : currentPage === "backtest"
+            ? t('backtest.subtitle')
+            : t('rdagent.subtitle');
 
   return (
     <div className="min-h-screen flex">
@@ -87,7 +112,7 @@ export default function App() {
                   : "text-on-surface-variant hover:bg-surface-container-low"
               }`}
             >
-              Dashboard
+              {t('nav.workbench')}
             </button>
             <button
               onClick={() => setCurrentPage("workflows")}
@@ -97,7 +122,7 @@ export default function App() {
                   : "text-on-surface-variant hover:bg-surface-container-low"
               }`}
             >
-              Workflows
+              {t('nav.workflows')}
             </button>
             <button
               onClick={() => setCurrentPage("experiments")}
@@ -107,7 +132,7 @@ export default function App() {
                   : "text-on-surface-variant hover:bg-surface-container-low"
               }`}
             >
-              Experiments
+              {t('nav.experiments')}
             </button>
             <button
               onClick={() => setCurrentPage("backtest")}
@@ -117,7 +142,7 @@ export default function App() {
                   : "text-on-surface-variant hover:bg-surface-container-low"
               }`}
             >
-              Backtest
+              {t('nav.backtestAnalyzer')}
             </button>
             <button
               onClick={() => setCurrentPage("rdagent")}
@@ -127,15 +152,25 @@ export default function App() {
                   : "text-on-surface-variant hover:bg-surface-container-low"
               }`}
             >
-              RD-Agent
+              {t('nav.rdAgentCenter')}
             </button>
           </div>
-          <button
-            onClick={loadAll}
-            className="text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-70 p-1 rounded"
-          >
-            <span className="material-symbols-outlined">refresh</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as 'en' | 'zh-CN')}
+              className="bg-surface-container-low border border-outline-variant rounded px-1 py-0.5 text-[10px] text-on-surface focus:outline-none focus:border-primary"
+            >
+              <option value="en">EN</option>
+              <option value="zh-CN">中</option>
+            </select>
+            <button
+              onClick={loadAll}
+              className="text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-70 p-1 rounded"
+            >
+              <span className="material-symbols-outlined">refresh</span>
+            </button>
+          </div>
         </header>
 
         {/* Dashboard Content */}
@@ -144,26 +179,10 @@ export default function App() {
           <div className="flex justify-between items-end border-b border-outline-variant pb-4">
             <div>
               <h2 className="font-headline-sm text-headline-sm text-on-surface">
-                {currentPage === "dashboard"
-                  ? "Qlib Studio Dashboard"
-                  : currentPage === "workflows"
-                    ? "Workflow Runner"
-                    : currentPage === "experiments"
-                      ? "Experiment Center"
-                      : currentPage === "backtest"
-                        ? "Backtest Analyzer"
-                        : "RD-Agent Center"}
+                {pageTitle}
               </h2>
               <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-                {currentPage === "dashboard"
-                  ? "Local Quant Research Workbench"
-                  : currentPage === "workflows"
-                    ? "Run and manage qrun workflows"
-                    : currentPage === "experiments"
-                      ? "View MLflow experiment results"
-                      : currentPage === "backtest"
-                        ? "Analyze backtest performance and risk"
-                        : "Run AI-driven factor and model research tasks"}
+                {pageSubtitle}
               </p>
             </div>
             {currentPage === "dashboard" && (
@@ -177,7 +196,7 @@ export default function App() {
                 >
                   refresh
                 </span>
-                Refresh Status
+                {t('dashboard.refreshStatus')}
               </button>
             )}
           </div>

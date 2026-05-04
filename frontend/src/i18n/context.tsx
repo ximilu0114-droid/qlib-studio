@@ -3,7 +3,7 @@ import { en, zhCN, type Language, type TranslationKey } from './translations';
 
 const STORAGE_KEY = 'qlib-lang';
 
-const translations: Record<Language, typeof en> = {
+const translations: Record<Language, Record<TranslationKey, string>> = {
   en,
   'zh-CN': zhCN,
 };

@@ -1,4 +1,5 @@
 import type { TemplateItem } from "../types/api";
+import { useTranslation } from "../i18n";
 
 interface Props {
   templates: TemplateItem[];
@@ -7,11 +8,13 @@ interface Props {
 }
 
 export default function WorkflowList({ templates, selected, onSelect }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
       <div className="px-4 py-3 border-b border-outline-variant">
         <h3 className="font-body-sm text-on-surface font-semibold">
-          Workflow Templates
+          {t('workflow.workflowTemplates')}
         </h3>
       </div>
       <div className="divide-y divide-outline-variant max-h-96 overflow-y-auto">
@@ -37,7 +40,7 @@ export default function WorkflowList({ templates, selected, onSelect }: Props) {
         ))}
         {templates.length === 0 && (
           <div className="px-4 py-6 text-center text-on-surface-variant text-sm">
-            No templates found
+            {t('workflow.noTemplatesFound')}
           </div>
         )}
       </div>

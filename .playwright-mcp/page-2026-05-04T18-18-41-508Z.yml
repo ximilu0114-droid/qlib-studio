@@ -1,0 +1,140 @@
+- generic [ref=e3]:
+  - navigation [ref=e7]:
+    - generic [ref=e8]:
+      - heading "Qlib Studio" [level=1] [ref=e9]
+      - generic [ref=e10]: v0.2.0-alpha
+    - generic [ref=e11]:
+      - button "terminal Workbench" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: terminal
+        - text: Workbench
+      - button "play_circle Workflows" [ref=e14] [cursor=pointer]:
+        - generic [ref=e15]: play_circle
+        - text: Workflows
+      - button "science Experiments" [ref=e16] [cursor=pointer]:
+        - generic [ref=e17]: science
+        - text: Experiments
+      - button "assessment Backtest Analyzer" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: assessment
+        - text: Backtest Analyzer
+      - button "memory RD-Agent Center" [active] [ref=e20] [cursor=pointer]:
+        - generic [ref=e21]: memory
+        - text: RD-Agent Center
+      - generic [ref=e22]:
+        - generic [ref=e23]: database
+        - text: Datasets
+      - generic [ref=e24]:
+        - generic [ref=e25]: hub
+        - text: Models
+      - generic [ref=e26]:
+        - generic [ref=e27]: settings
+        - text: System Settings
+    - combobox [ref=e29]:
+      - option "English" [selected]
+      - option "中文"
+  - main [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e33]:
+        - heading "RD-Agent Center" [level=2] [ref=e112]
+        - paragraph [ref=e35]: Run AI-driven factor and model research tasks
+      - generic [ref=e113]:
+        - generic [ref=e114]:
+          - generic [ref=e115]:
+            - generic [ref=e117]:
+              - generic [ref=e120]:
+                - paragraph [ref=e121]: RD-Agent
+                - paragraph [ref=e122]: RD-Agent is not installed.
+              - generic [ref=e124]:
+                - generic [ref=e125]: info
+                - generic [ref=e126]:
+                  - paragraph [ref=e127]: Version
+                  - paragraph [ref=e128]: "-"
+              - generic [ref=e132]:
+                - paragraph [ref=e133]: Docker
+                - paragraph [ref=e134]: Not found
+              - generic [ref=e136]:
+                - generic [ref=e137]: info
+                - generic [ref=e138]:
+                  - paragraph [ref=e139]: .env File
+                  - paragraph [ref=e140]: Missing
+              - generic [ref=e144]:
+                - paragraph [ref=e145]: LLM Config
+                - paragraph [ref=e146]: Missing
+              - paragraph [ref=e150]: Not Ready
+            - generic [ref=e151]:
+              - generic [ref=e152]:
+                - heading "Scenario Selector" [level=3] [ref=e153]
+                - generic [ref=e154]: Select Research Type
+              - generic [ref=e155]:
+                - button "AI Factor Research show_chart Automated generation and evaluation of alpha factors. rdagent fin_factor" [ref=e156] [cursor=pointer]:
+                  - generic [ref=e158]:
+                    - heading "AI Factor Research" [level=4] [ref=e160]
+                    - generic [ref=e161]: show_chart
+                  - paragraph [ref=e162]: Automated generation and evaluation of alpha factors.
+                  - paragraph [ref=e164]: rdagent fin_factor
+                - button "AI Model Research model_training Train and evaluate predictive models autonomously. rdagent fin_model" [ref=e165] [cursor=pointer]:
+                  - generic [ref=e167]:
+                    - heading "AI Model Research" [level=4] [ref=e169]
+                    - generic [ref=e170]: model_training
+                  - paragraph [ref=e171]: Train and evaluate predictive models autonomously.
+                  - paragraph [ref=e173]: rdagent fin_model
+                - button "Factor + Model Research Selected merge_type End-to-end quantitative pipeline optimization. rdagent fin_quant" [ref=e174] [cursor=pointer]:
+                  - generic [ref=e176]:
+                    - generic [ref=e177]:
+                      - heading "Factor + Model Research" [level=4] [ref=e178]
+                      - generic [ref=e179]: Selected
+                    - generic [ref=e180]: merge_type
+                  - paragraph [ref=e181]: End-to-end quantitative pipeline optimization.
+                  - paragraph [ref=e183]: rdagent fin_quant
+                - button "Report to Factor summarize Extract alpha factors from text-based reports. rdagent fin_factor_report" [ref=e184] [cursor=pointer]:
+                  - generic [ref=e186]:
+                    - heading "Report to Factor" [level=4] [ref=e188]
+                    - generic [ref=e189]: summarize
+                  - paragraph [ref=e190]: Extract alpha factors from text-based reports.
+                  - paragraph [ref=e192]: rdagent fin_factor_report
+            - generic [ref=e193]:
+              - generic [ref=e194]:
+                - heading "Run Configuration" [level=3] [ref=e195]
+                - generic [ref=e196]: Execution Setup
+              - generic [ref=e197]:
+                - generic [ref=e198]: Extra Arguments
+                - textbox "--epochs 10 --dataset qlib_alpha360" [ref=e199]
+              - button "play_arrow Start RD-Agent Job" [disabled] [ref=e201]:
+                - generic [ref=e202]: play_arrow
+                - text: Start RD-Agent Job
+          - generic [ref=e203]:
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - heading "Agent Settings" [level=3] [ref=e206]
+                - generic [ref=e207]: settings
+              - generic [ref=e208]:
+                - generic [ref=e209]: Working Directory
+                - textbox [ref=e210]: /Users/ximilu/Documents/qlib studio/backend
+              - generic [ref=e211]:
+                - generic [ref=e212]: Output Directory
+                - textbox [ref=e213]: /Users/ximilu/Documents/qlib studio/backend/storage/rdagent_outputs
+              - generic [ref=e214]:
+                - generic [ref=e215]: Env File Path
+                - textbox [ref=e216]: .env
+              - button "Save Settings" [disabled] [ref=e217]
+            - generic [ref=e218]:
+              - generic [ref=e219]:
+                - heading "Health Check" [level=3] [ref=e220]
+                - button "health_and_safety Run Check" [ref=e221] [cursor=pointer]:
+                  - generic [ref=e222]: health_and_safety
+                  - text: Run Check
+              - generic [ref=e223]:
+                - generic [ref=e228]: Terminal
+                - paragraph [ref=e229]: Click "Run Check" to verify your RD-Agent environment.
+        - generic [ref=e230]:
+          - generic [ref=e231]:
+            - generic [ref=e232]:
+              - heading "Recent RD-Agent Jobs" [level=3] [ref=e233]
+              - button "refresh" [ref=e234] [cursor=pointer]:
+                - generic [ref=e235]: refresh
+            - generic [ref=e236]:
+              - generic [ref=e237]: work
+              - paragraph [ref=e238]: No RD-Agent jobs yet
+              - paragraph [ref=e239]: Start a scenario above to see jobs here
+          - generic [ref=e240]:
+            - heading "Process Logs" [level=3] [ref=e243]
+            - generic [ref=e245]: Select a job from the table to view its logs.

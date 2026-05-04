@@ -31,6 +31,7 @@ import {
   fetchBacktestIndicators,
   compareBacktestRuns,
 } from "../api/client";
+import { useTranslation } from "../i18n";
 
 type View = "select" | "analyze" | "compare";
 
@@ -43,7 +44,6 @@ export default function BacktestAnalyzer() {
   const [errors, setErrors] = useState<string[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
 
-  // Analysis state
   const [analyzingRunId, setAnalyzingRunId] = useState<string | null>(null);
   const [summary, setSummary] = useState<BacktestSummaryResponse | null>(null);
   const [curves, setCurves] = useState<CurveDataResponse | null>(null);
@@ -51,10 +51,11 @@ export default function BacktestAnalyzer() {
   const [indicators, setIndicators] = useState<IndicatorPreviewResponse | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
 
-  // Compare state
   const [selectedRunIds, setSelectedRunIds] = useState<string[]>([]);
   const [compareResult, setCompareResult] = useState<BacktestCompareResponse | null>(null);
   const [compareLoading, setCompareLoading] = useState(false);
+
+  const { t } = useTranslation();
 
   const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "Unknown error";
@@ -76,16 +77,15 @@ export default function BacktestAnalyzer() {
   const clearErrors = () => setErrors([]);
   const clearWarnings = () => setWarnings([]);
 
-  // Load experiments
   const loadExperiments = useCallback(async () => {
     try {
       const data = await fetchExperiments();
       setExperiments(data.experiments);
       clearErrors();
     } catch (error) {
-      addError(`Failed to load experiments. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToLoadExperiments')} ${getErrorMessage(error)}`);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const init = async () => {
@@ -96,7 +96,6 @@ export default function BacktestAnalyzer() {
     init();
   }, [loadExperiments]);
 
-  // Select experiment and load runs
   const handleSelectExperiment = async (exp: ExperimentSummary) => {
     setSelectedExp(exp);
     try {
@@ -104,18 +103,16 @@ export default function BacktestAnalyzer() {
       setRuns(data.runs);
       clearErrors();
     } catch (error) {
-      addError(`Failed to load runs. ${getErrorMessage(error)}`);
+      addError(`${t('error.failedToLoadRuns')} ${getErrorMessage(error)}`);
     }
   };
 
-  // Toggle run selection for comparison
   const toggleRunSelection = (runId: string) => {
     setSelectedRunIds((prev) =>
       prev.includes(runId) ? prev.filter((id) => id !== runId) : [...prev, runId]
     );
   };
 
-  // Analyze a single run
   const handleAnalyze = async (runId: string) => {
     setAnalyzingRunId(runId);
     setAnalysisLoading(true);
@@ -167,7 +164,6 @@ export default function BacktestAnalyzer() {
     }
   };
 
-  // Compare selected runs
   const handleCompare = async () => {
     if (selectedRunIds.length < 2) return;
     setCompareLoading(true);
@@ -186,7 +182,6 @@ export default function BacktestAnalyzer() {
     }
   };
 
-  // Go back
   const handleBack = () => {
     if (view === "analyze") {
       setView("select");
@@ -282,7 +277,7 @@ export default function BacktestAnalyzer() {
           <span className="material-symbols-outlined text-[16px] mr-1">
             arrow_back
           </span>
-          Back to Run Selection
+          {t('backtest.backToRunSelection')}
         </button>
       )}
 
@@ -358,12 +353,14 @@ function SelectView({
   onCompare,
   onBackToExperiments,
 }: SelectViewProps) {
+  const { t } = useTranslation();
+
   if (!selectedExp) {
     return (
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
         <div className="px-4 py-3 border-b border-outline-variant">
           <h3 className="font-body-sm text-on-surface font-semibold">
-            Select Experiment ({experiments.length})
+            {t('backtest.selectExperiment')} ({experiments.length})
           </h3>
         </div>
         {experiments.length === 0 ? (
@@ -371,8 +368,8 @@ function SelectView({
             <span className="material-symbols-outlined text-4xl mb-2 block">
               science
             </span>
-            <p className="font-body-sm">No experiments found</p>
-            <p className="text-xs mt-1">Run a Qlib workflow to create experiments</p>
+            <p className="font-body-sm">{t('experiment.noExperiments')}</p>
+            <p className="text-xs mt-1">{t('experiment.runQlibWorkflow')}</p>
           </div>
         ) : (
           <div className="divide-y divide-outline-variant">
@@ -407,20 +404,20 @@ function SelectView({
         className="flex items-center text-primary hover:underline font-body-sm"
       >
         <span className="material-symbols-outlined text-[16px] mr-1">arrow_back</span>
-        Back to Experiments
+        {t('backtest.backToExperiments')}
       </button>
 
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
         <div className="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
           <h3 className="font-body-sm text-on-surface font-semibold">
-            Runs in &quot;{selectedExp.name}&quot; ({runs.length})
+            {t('experiment.runsIn').replace('{name}', selectedExp.name)} ({runs.length})
           </h3>
           {selectedRunIds.length >= 2 && (
             <button
               onClick={onCompare}
               className="bg-primary text-on-primary px-3 py-1.5 rounded font-body-sm hover:opacity-90"
             >
-              Compare Selected ({selectedRunIds.length})
+              {t('backtest.compareSelected').replace('{count}', String(selectedRunIds.length))}
             </button>
           )}
         </div>
@@ -429,7 +426,7 @@ function SelectView({
             <span className="material-symbols-outlined text-4xl mb-2 block">
               hourglass_empty
             </span>
-            <p className="font-body-sm">No runs in this experiment</p>
+            <p className="font-body-sm">{t('experiment.noRuns')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -440,19 +437,19 @@ function SelectView({
                     <span className="material-symbols-outlined text-[16px]">checklist</span>
                   </th>
                   <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                    Run ID
+                    {t('experiment.runId')}
                   </th>
                   <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                    Status
+                    {t('common.status')}
                   </th>
                   <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                    Metrics
+                    {t('common.metrics')}
                   </th>
                   <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                    Started
+                    {t('common.started')}
                   </th>
                   <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                    Action
+                    {t('common.actions')}
                   </th>
                 </tr>
               </thead>
@@ -496,7 +493,7 @@ function SelectView({
                         onClick={() => onAnalyze(run.run_id)}
                         className="text-primary hover:underline font-body-sm font-medium"
                       >
-                        Analyze
+                        {t('backtest.analyze')}
                       </button>
                     </td>
                   </tr>
@@ -535,12 +532,14 @@ function AnalyzeView({
   formatMetric,
   formatPct,
 }: AnalyzeViewProps) {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <p className="ml-3 font-body-sm text-on-surface-variant">
-          Loading backtest artifacts...
+          {t('backtest.loadingArtifacts')}
         </p>
       </div>
     );
@@ -552,7 +551,6 @@ function AnalyzeView({
   const hasIndicators = indicators && indicators.rows.length > 0;
 
   if (!hasSummary && !hasCurves && !hasRisk && !hasIndicators) {
-    // Collect all warnings to detect specific missing-artifact scenarios
     const allWarnings = [
       ...(summary?.warnings || []),
       ...(curves?.warnings || []),
@@ -574,15 +572,14 @@ function AnalyzeView({
             warning
           </span>
           <p className="font-body-sm text-on-surface">
-            No backtest artifacts found for this run.
+            {t('backtest.noBacktestArtifacts')}
           </p>
         </div>
 
         {onlyPred && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
             <p className="text-xs text-yellow-800">
-              This run contains prediction artifacts but no portfolio analysis artifacts.
-              Make sure the workflow YAML includes backtest and <code>PortAnaRecord</code>.
+              {t('backtest.predictionOnly')}
             </p>
           </div>
         )}
@@ -590,7 +587,7 @@ function AnalyzeView({
         {hasNoArtifacts && !onlyPred && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
             <p className="text-xs text-yellow-800">
-              This run has no artifacts. Please check whether qrun completed with recorder output.
+              {t('backtest.noArtifactsRun')}
             </p>
           </div>
         )}
@@ -598,7 +595,7 @@ function AnalyzeView({
         {availableArtifacts.length > 0 && !onlyPred && (
           <details className="mt-4">
             <summary className="font-body-sm text-on-surface-variant cursor-pointer hover:text-on-surface">
-              Available Artifacts ({availableArtifacts.length})
+              {t('backtest.availableArtifacts')} ({availableArtifacts.length})
             </summary>
             <ul className="mt-2 space-y-1">
               {availableArtifacts.map((path) => (
@@ -611,7 +608,7 @@ function AnalyzeView({
         )}
 
         <p className="text-xs text-on-surface-variant mt-4 text-center">
-          Run a full Qlib workflow with backtest to generate analysis data.
+          {t('backtest.runFullWorkflow')}
         </p>
       </div>
     );
@@ -623,7 +620,7 @@ function AnalyzeView({
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4">
         <div className="flex items-center justify-between">
           <h3 className="font-body-sm text-on-surface font-semibold">
-            Backtest Analysis
+            {t('backtest.backtestAnalysis')}
           </h3>
           <span className="font-body-sm text-on-surface-variant font-mono text-xs">
             {runId}
@@ -636,7 +633,7 @@ function AnalyzeView({
         <SummaryCards summary={summary.summary} formatPct={formatPct} formatMetric={formatMetric} />
       )}
 
-      {/* Charts 2-column grid */}
+      {/* Charts */}
       {curves && curves.curves.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-panel-gap">
           <CumulativeReturnChart curves={curves.curves} />
@@ -648,7 +645,7 @@ function AnalyzeView({
             show_chart
           </span>
           <p className="font-body-sm text-on-surface">
-            No return curve data found. Please check whether report_normal_1day.pkl exists.
+            {t('backtest.noReturnCurve')}
           </p>
         </div>
       ) : null}
@@ -682,30 +679,31 @@ function SummaryCards({
   formatPct: (v: number | null | undefined) => string;
   formatMetric: (v: number | null | undefined, d?: number) => string;
 }) {
+  const { t } = useTranslation();
   const cards: { label: string; value: string; icon: string }[] = [];
 
   cards.push({
-    label: "Ann. Return",
+    label: t('backtest.annReturn'),
     value: formatPct(summary.annualized_return),
     icon: "trending_up",
   });
   cards.push({
-    label: "Info Ratio",
+    label: t('backtest.infoRatio'),
     value: formatMetric(summary.information_ratio, 3),
     icon: "speed",
   });
   cards.push({
-    label: "Max Drawdown",
+    label: t('backtest.maxDrawdown'),
     value: formatPct(summary.max_drawdown),
     icon: "trending_down",
   });
   cards.push({
-    label: "Excess Ann. Return (no cost)",
+    label: t('backtest.excessAnnReturnNoCost'),
     value: formatPct(summary.excess_return_without_cost_annualized_return),
     icon: "show_chart",
   });
   cards.push({
-    label: "Excess Ann. Return (with cost)",
+    label: t('backtest.excessAnnReturnWithCost'),
     value: formatPct(summary.excess_return_with_cost_annualized_return),
     icon: "show_chart",
   });
@@ -741,40 +739,42 @@ function DataCoverage({
   coverage: CurveCoverage;
   summarySources?: string[];
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4">
       <h4 className="font-body-sm text-on-surface font-semibold mb-3">
-        Data Coverage
+        {t('backtest.dataCoverage')}
       </h4>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <div>
-          <p className="text-xs text-on-surface-variant">Start Date</p>
+          <p className="text-xs text-on-surface-variant">{t('backtest.startDate')}</p>
           <p className="font-body-sm text-on-surface font-mono text-xs">
             {coverage.start_date || "-"}
           </p>
         </div>
         <div>
-          <p className="text-xs text-on-surface-variant">End Date</p>
+          <p className="text-xs text-on-surface-variant">{t('backtest.endDate')}</p>
           <p className="font-body-sm text-on-surface font-mono text-xs">
             {coverage.end_date || "-"}
           </p>
         </div>
         <div>
-          <p className="text-xs text-on-surface-variant">Trading Days</p>
+          <p className="text-xs text-on-surface-variant">{t('backtest.tradingDays')}</p>
           <p className="font-body-sm text-on-surface">{coverage.trading_days}</p>
         </div>
         <div>
-          <p className="text-xs text-on-surface-variant">Curve Points</p>
+          <p className="text-xs text-on-surface-variant">{t('backtest.curvePoints')}</p>
           <p className="font-body-sm text-on-surface">{coverage.curve_points}</p>
         </div>
         <div>
-          <p className="text-xs text-on-surface-variant">Report Source</p>
+          <p className="text-xs text-on-surface-variant">{t('backtest.reportSource')}</p>
           <p className="font-body-sm text-on-surface font-mono text-xs truncate" title={coverage.artifact_source_report || ""}>
             {coverage.artifact_source_report ? coverage.artifact_source_report.split("/").pop() : "-"}
           </p>
         </div>
         <div>
-          <p className="text-xs text-on-surface-variant">Risk Source</p>
+          <p className="text-xs text-on-surface-variant">{t('backtest.riskSource')}</p>
           <p className="font-body-sm text-on-surface font-mono text-xs truncate" title={coverage.artifact_source_risk || ""}>
             {coverage.artifact_source_risk
               ? coverage.artifact_source_risk.split("/").pop()
@@ -808,10 +808,12 @@ function tooltipFormatter(value: unknown): string {
 // ---------------------------------------------------------------------------
 
 function CumulativeReturnChart({ curves }: { curves: CurvePoint[] }) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4">
       <h4 className="font-body-sm text-on-surface font-semibold mb-3">
-        Cumulative Return
+        {t('backtest.cumulativeReturn')}
       </h4>
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={curves}>
@@ -866,10 +868,12 @@ function CumulativeReturnChart({ curves }: { curves: CurvePoint[] }) {
 // ---------------------------------------------------------------------------
 
 function DrawdownChart({ curves }: { curves: CurvePoint[] }) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-4">
       <h4 className="font-body-sm text-on-surface font-semibold mb-3">
-        Drawdown
+        {t('backtest.drawdown')}
       </h4>
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={curves}>
@@ -919,7 +923,7 @@ function RiskTable({
   formatPct: (v: number | null | undefined) => string;
   formatMetric: (v: number | null | undefined, d?: number) => string;
 }) {
-  // Group rows by group name
+  const { t } = useTranslation();
   const groups = new Map<string, RiskTableRow[]>();
   for (const row of riskTable) {
     const existing = groups.get(row.group) ?? [];
@@ -927,13 +931,11 @@ function RiskTable({
     groups.set(row.group, existing);
   }
 
-  // Collect all unique metrics across groups
   const allMetrics = new Set<string>();
   for (const rows of groups.values()) {
     for (const row of rows) allMetrics.add(row.metric);
   }
 
-  // Build a lookup: group -> metric -> value
   const lookup = new Map<string, Map<string, number | null>>();
   for (const row of riskTable) {
     if (!lookup.has(row.group)) lookup.set(row.group, new Map());
@@ -943,7 +945,6 @@ function RiskTable({
   const groupNames = Array.from(groups.keys());
   const metricNames = Array.from(allMetrics);
 
-  // Determine if a metric should be formatted as percentage
   const pctMetrics = new Set([
     "annualized_return",
     "max_drawdown",
@@ -954,14 +955,14 @@ function RiskTable({
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
       <div className="px-4 py-3 border-b border-outline-variant">
-        <h4 className="font-body-sm text-on-surface font-semibold">Risk Analysis</h4>
+        <h4 className="font-body-sm text-on-surface font-semibold">{t('backtest.riskAnalysis')}</h4>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-outline-variant bg-surface-container-low">
               <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                Metric
+                {t('common.metric')}
               </th>
               {groupNames.map((g) => (
                 <th
@@ -1012,6 +1013,7 @@ function IndicatorPreviewTable({
   formatMetric: (v: number | null | undefined, d?: number) => string;
 }) {
   const [showAll, setShowAll] = useState(false);
+  const { t } = useTranslation();
   const displayRows = showAll
     ? indicators.rows
     : indicators.rows.slice(0, 10);
@@ -1020,10 +1022,10 @@ function IndicatorPreviewTable({
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
       <div className="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
         <h4 className="font-body-sm text-on-surface font-semibold">
-          Indicator Preview
+          {t('backtest.indicatorPreview')}
         </h4>
         <span className="text-xs text-on-surface-variant">
-          {indicators.rows.length} rows
+          {indicators.rows.length} {t('backtest.rows')}
           {indicators.index_start && indicators.index_end
             ? ` \u00b7 ${indicators.index_start} to ${indicators.index_end}`
             : ""}
@@ -1079,8 +1081,8 @@ function IndicatorPreviewTable({
             className="text-primary hover:underline font-body-sm"
           >
             {showAll
-              ? "Show less"
-              : `Show all ${indicators.rows.length} rows`}
+              ? t('backtest.showLess')
+              : t('backtest.showAll').replace('{count}', String(indicators.rows.length))}
           </button>
         </div>
       )}
@@ -1100,12 +1102,14 @@ interface CompareViewProps {
 }
 
 function CompareView({ loading, result, formatMetric, formatPct }: CompareViewProps) {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <p className="ml-3 font-body-sm text-on-surface-variant">
-          Loading comparison data...
+          {t('backtest.loadingComparison')}
         </p>
       </div>
     );
@@ -1114,22 +1118,22 @@ function CompareView({ loading, result, formatMetric, formatPct }: CompareViewPr
   if (!result || result.runs.length === 0) {
     return (
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-8 text-center">
-        <p className="font-body-sm text-on-surface">No runs to compare</p>
+        <p className="font-body-sm text-on-surface">{t('backtest.noRunsToCompare')}</p>
       </div>
     );
   }
 
   const metricRows = [
-    { label: "Ann. Return", key: "annualized_return", pct: true },
-    { label: "Info Ratio", key: "information_ratio", pct: false },
-    { label: "Max Drawdown", key: "max_drawdown", pct: true },
+    { label: t('backtest.annReturn'), key: "annualized_return", pct: true },
+    { label: t('backtest.infoRatio'), key: "information_ratio", pct: false },
+    { label: t('backtest.maxDrawdown'), key: "max_drawdown", pct: true },
   ];
 
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
       <div className="px-4 py-3 border-b border-outline-variant">
         <h4 className="font-body-sm text-on-surface font-semibold">
-          Run Comparison ({result.runs.length} runs)
+          {t('backtest.runComparison').replace('{count}', String(result.runs.length))}
         </h4>
       </div>
       <div className="overflow-x-auto">
@@ -1137,7 +1141,7 @@ function CompareView({ loading, result, formatMetric, formatPct }: CompareViewPr
           <thead>
             <tr className="border-b border-outline-variant bg-surface-container-low">
               <th className="px-4 py-2 text-left font-body-sm text-on-surface-variant font-medium">
-                Metric
+                {t('common.metric')}
               </th>
               {result.runs.map((run) => (
                 <th

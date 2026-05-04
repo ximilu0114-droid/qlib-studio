@@ -1,9 +1,13 @@
+import { useTranslation } from "../i18n";
+
 interface Props {
   currentPage: string;
   onNavigate: (page: string) => void;
 }
 
 export default function Sidebar({ currentPage, onNavigate }: Props) {
+  const { t, language, setLanguage } = useTranslation();
+
   return (
     <nav className="bg-surface-container-lowest text-on-surface font-body-sm fixed left-0 top-0 h-screen w-64 border-r border-outline-variant pt-12 z-40 hidden md:flex flex-col">
       <div className="px-4 mb-8">
@@ -26,7 +30,7 @@ export default function Sidebar({ currentPage, onNavigate }: Props) {
           <span className="material-symbols-outlined mr-3 text-[18px]">
             terminal
           </span>
-          Workbench
+          {t('nav.workbench')}
         </button>
         <button
           onClick={() => onNavigate("workflows")}
@@ -39,7 +43,7 @@ export default function Sidebar({ currentPage, onNavigate }: Props) {
           <span className="material-symbols-outlined mr-3 text-[18px]">
             play_circle
           </span>
-          Workflows
+          {t('nav.workflows')}
         </button>
         <button
           onClick={() => onNavigate("experiments")}
@@ -52,7 +56,7 @@ export default function Sidebar({ currentPage, onNavigate }: Props) {
           <span className="material-symbols-outlined mr-3 text-[18px]">
             science
           </span>
-          Experiments
+          {t('nav.experiments')}
         </button>
         <button
           onClick={() => onNavigate("backtest")}
@@ -65,7 +69,7 @@ export default function Sidebar({ currentPage, onNavigate }: Props) {
           <span className="material-symbols-outlined mr-3 text-[18px]">
             assessment
           </span>
-          Backtest Analyzer
+          {t('nav.backtestAnalyzer')}
         </button>
         <button
           onClick={() => onNavigate("rdagent")}
@@ -78,24 +82,34 @@ export default function Sidebar({ currentPage, onNavigate }: Props) {
           <span className="material-symbols-outlined mr-3 text-[18px]">
             memory
           </span>
-          RD-Agent Center
+          {t('nav.rdAgentCenter')}
         </button>
         <a className="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface flex items-center px-3 py-2 transition-colors border-l-2 border-transparent opacity-50 cursor-not-allowed">
           <span className="material-symbols-outlined mr-3 text-[18px]">
             database
           </span>
-          Datasets
+          {t('nav.datasets')}
         </a>
         <a className="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface flex items-center px-3 py-2 transition-colors border-l-2 border-transparent opacity-50 cursor-not-allowed">
           <span className="material-symbols-outlined mr-3 text-[18px]">hub</span>
-          Models
+          {t('nav.models')}
         </a>
         <a className="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface flex items-center px-3 py-2 transition-colors border-l-2 border-transparent opacity-50 cursor-not-allowed">
           <span className="material-symbols-outlined mr-3 text-[18px]">
             settings
           </span>
-          System Settings
+          {t('nav.systemSettings')}
         </a>
+      </div>
+      <div className="px-4 py-3 border-t border-outline-variant">
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as 'en' | 'zh-CN')}
+          className="w-full bg-surface-container-low border border-outline-variant rounded px-2 py-1.5 font-body-sm text-on-surface focus:outline-none focus:border-primary"
+        >
+          <option value="en">{t('lang.en')}</option>
+          <option value="zh-CN">{t('lang.zhCN')}</option>
+        </select>
       </div>
     </nav>
   );

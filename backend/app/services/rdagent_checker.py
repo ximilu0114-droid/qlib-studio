@@ -1,11 +1,11 @@
 import os
-import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 from app.core.config import RDAGENT_OUTPUT_DIR, RDAGENT_WORKING_DIR
+from app.services.secret_sanitizer import sanitize_text
 
 _ENV_KEYS_TO_CHECK = [
     "OPENAI_API_KEY",
@@ -78,13 +78,19 @@ def _check_docker_daemon() -> bool:
         return False
 
 
-def _check_env_file(working_dir: Path) -> tuple[bool, bool]:
+def _resolve_path(path: str | Path, base: Path) -> Path:
+    raw = Path(path).expanduser()
+    if raw.is_absolute():
+        return raw.resolve()
+    return (base / raw).resolve()
+
+
+def _check_env_file(env_path: Path) -> tuple[bool, bool]:
     """Check whether .env exists and whether it contains LLM config keys.
 
     Returns (env_file_exists, llm_config_detected).
     Never exposes actual secret values.
     """
-    env_path = working_dir / ".env"
     if not env_path.is_file():
         return False, False
 
@@ -112,7 +118,11 @@ def _check_output_dir(output_dir: Path) -> bool:
     return output_dir.is_dir()
 
 
-def check_rdagent_status() -> dict:
+def check_rdagent_status(
+    working_dir: str | None = None,
+    output_dir: str | None = None,
+    env_file: str | None = None,
+) -> dict:
     """Run all RD-Agent environment checks and return a status dict.
 
     Never raises — all failures are captured as warnings.
@@ -144,11 +154,15 @@ def check_rdagent_status() -> dict:
             )
 
     # 6 & 7. .env file and LLM config
-    working_dir = RDAGENT_WORKING_DIR.resolve()
-    env_file_exists, llm_config_detected = _check_env_file(working_dir)
+    project_root = RDAGENT_WORKING_DIR.resolve()
+    resolved_working_dir = _resolve_path(working_dir or RDAGENT_WORKING_DIR, project_root)
+    env_name = env_file or ".env"
+    env_path = _resolve_path(env_name, resolved_working_dir)
+
+    env_file_exists, llm_config_detected = _check_env_file(env_path)
     if not env_file_exists:
         warnings.append(
-            f"No .env file found in {working_dir}. "
+            f"No {env_name} file found in {resolved_working_dir}. "
             "Create one from RD-Agent's .env.example to configure LLM access."
         )
     elif not llm_config_detected:
@@ -158,8 +172,8 @@ def check_rdagent_status() -> dict:
         )
 
     # 8. Output directory
-    output_dir = RDAGENT_OUTPUT_DIR.resolve()
-    output_dir_exists = _check_output_dir(output_dir)
+    resolved_output_dir = _resolve_path(output_dir or RDAGENT_OUTPUT_DIR, project_root)
+    output_dir_exists = _check_output_dir(resolved_output_dir)
 
     # ready = rdagent installed AND Docker daemon reachable
     ready = rdagent_installed and docker_available
@@ -173,30 +187,17 @@ def check_rdagent_status() -> dict:
         "docker_available": docker_available,
         "env_file_exists": env_file_exists,
         "llm_config_detected": llm_config_detected,
-        "working_dir": str(working_dir),
-        "output_dir": str(output_dir),
+        "working_dir": str(resolved_working_dir),
+        "output_dir": str(resolved_output_dir),
         "output_dir_exists": output_dir_exists,
         "ready": ready,
         "warnings": warnings,
     }
 
 
-_SECRET_PATTERNS = [
-    re.compile(r"sk-[A-Za-z0-9]{20,}"),
-    re.compile(r"sess-[A-Za-z0-9\-]{20,}"),
-    re.compile(r"AKIA[A-Z0-9]{16}"),
-    re.compile(r"ghp_[A-Za-z0-9]{30,}"),
-    re.compile(r"xoxb-[A-Za-z0-9\-]{20,}"),
-    re.compile(r"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"),
-]
-
-
 def _sanitize_output(text: str) -> str:
     """Remove anything that looks like a secret from command output."""
-    sanitized = text
-    for pattern in _SECRET_PATTERNS:
-        sanitized = pattern.sub("[REDACTED]", sanitized)
-    return sanitized
+    return sanitize_text(text)
 
 
 def run_health_check() -> dict:

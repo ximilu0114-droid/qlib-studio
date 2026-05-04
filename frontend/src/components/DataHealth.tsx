@@ -1,3 +1,5 @@
+import { useTranslation } from "../i18n";
+
 interface DataHealthProps {
   dataPathExists: boolean;
   calendarExists: boolean;
@@ -26,19 +28,21 @@ export default function DataHealth({
   instrumentsExists,
   featuresExists,
 }: DataHealthProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded flex flex-col">
       <div className="p-4 border-b border-outline-variant">
         <h3 className="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest">
-          Data Health
+          {t('dataHealth.title')}
         </h3>
       </div>
       <div className="p-0">
         <ul className="divide-y divide-outline-variant">
-          <CheckItem label="Data path exists" ok={dataPathExists} />
-          <CheckItem label="calendars folder exists" ok={calendarExists} />
-          <CheckItem label="instruments folder exists" ok={instrumentsExists} />
-          <CheckItem label="features folder exists" ok={featuresExists} />
+          <CheckItem label={t('dataHealth.dataPathExists')} ok={dataPathExists} />
+          <CheckItem label={t('dataHealth.calendarsFolder')} ok={calendarExists} />
+          <CheckItem label={t('dataHealth.instrumentsFolder')} ok={instrumentsExists} />
+          <CheckItem label={t('dataHealth.featuresFolder')} ok={featuresExists} />
         </ul>
       </div>
     </div>
