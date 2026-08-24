@@ -57,14 +57,13 @@ _MLFLOW_EXCESS_WC_KEYS = [
     "excess_return_with_cost_max_drawdown",
 ]
 
-_ALL_SUMMARY_KEYS = (
-    _MLFLOW_SUMMARY_KEYS + _MLFLOW_EXCESS_WO_KEYS + _MLFLOW_EXCESS_WC_KEYS
-)
+_ALL_SUMMARY_KEYS = _MLFLOW_SUMMARY_KEYS + _MLFLOW_EXCESS_WO_KEYS + _MLFLOW_EXCESS_WC_KEYS
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _safe_float(val: Any) -> float | None:
     """Convert *val* to a plain float, returning None for NaN / bad types."""
@@ -154,9 +153,7 @@ def _try_mlflow_metrics(run_id: str, tracking_uri: str | None = None) -> dict[st
     try:
         import mlflow
 
-        if tracking_uri:
-            mlflow.set_tracking_uri(tracking_uri)
-        client = mlflow.MlflowClient()
+        client = mlflow.MlflowClient(tracking_uri=tracking_uri)
         run = client.get_run(run_id)
         metrics = run.data.metrics or {}
         for key in _ALL_SUMMARY_KEYS:
@@ -190,7 +187,8 @@ def _extract_from_port_analysis(port_analysis: Any) -> dict[str, float | None]:
         try:
             # Qlib's typical structure:
             #   Index level 0: "excess_return_without_cost", "excess_return_with_cost"
-            #   Index level 1: metric names (annualized_return, information_ratio, max_drawdown, ...)
+            #   Index level 1: metrics such as annualized_return,
+            #   information_ratio, and max_drawdown
             #   Column: "risk"
             levels = port_analysis.index.get_level_values(0).unique()
 
@@ -200,7 +198,13 @@ def _extract_from_port_analysis(port_analysis: Any) -> dict[str, float | None]:
                     if metric in sub.index:
                         val = sub.loc[metric]
                         # Handle both Series (multi-col) and scalar
-                        v = val["risk"] if "risk" in val.index else val.iloc[0] if hasattr(val, "iloc") else val
+                        v = (
+                            val["risk"]
+                            if "risk" in val.index
+                            else val.iloc[0]
+                            if hasattr(val, "iloc")
+                            else val
+                        )
                         fields[f"excess_return_without_cost_{metric}"] = _safe_float(v)
 
             if "excess_return_with_cost" in levels:
@@ -208,23 +212,34 @@ def _extract_from_port_analysis(port_analysis: Any) -> dict[str, float | None]:
                 for metric in ("annualized_return", "information_ratio", "max_drawdown"):
                     if metric in sub.index:
                         val = sub.loc[metric]
-                        v = val["risk"] if "risk" in val.index else val.iloc[0] if hasattr(val, "iloc") else val
+                        v = (
+                            val["risk"]
+                            if "risk" in val.index
+                            else val.iloc[0]
+                            if hasattr(val, "iloc")
+                            else val
+                        )
                         fields[f"excess_return_with_cost_{metric}"] = _safe_float(v)
 
             # Also try flat index (some Qlib versions store without group prefix)
             for metric in ("annualized_return", "information_ratio", "max_drawdown"):
                 if metric in port_analysis.index:
                     val = port_analysis.loc[metric]
-                    v = val["risk"] if "risk" in val.index else val.iloc[0] if hasattr(val, "iloc") else val
+                    v = (
+                        val["risk"]
+                        if "risk" in val.index
+                        else val.iloc[0]
+                        if hasattr(val, "iloc")
+                        else val
+                    )
                     fields[metric] = _safe_float(v)
 
             # Derive base fields from excess_return_without_cost as fallback
             for metric in ("annualized_return", "information_ratio", "max_drawdown"):
                 if fields[metric] is None:
-                    fields[metric] = (
-                        fields.get(f"excess_return_without_cost_{metric}")
-                        or fields.get(f"excess_return_with_cost_{metric}")
-                    )
+                    fields[metric] = fields.get(
+                        f"excess_return_without_cost_{metric}"
+                    ) or fields.get(f"excess_return_with_cost_{metric}")
 
         except Exception:
             pass
@@ -249,9 +264,8 @@ def _extract_from_port_analysis(port_analysis: Any) -> dict[str, float | None]:
         # Derive base fields from excess_return_without_cost as fallback
         for metric in ("annualized_return", "information_ratio", "max_drawdown"):
             if fields[metric] is None:
-                fields[metric] = (
-                    fields.get(f"excess_return_without_cost_{metric}")
-                    or fields.get(f"excess_return_with_cost_{metric}")
+                fields[metric] = fields.get(f"excess_return_without_cost_{metric}") or fields.get(
+                    f"excess_return_with_cost_{metric}"
                 )
 
         return fields
@@ -308,9 +322,8 @@ def _build_nav_curves(df: pd.DataFrame) -> list[dict[str, Any]]:
 # Public API
 # ---------------------------------------------------------------------------
 
-def get_backtest_summary(
-    run_id: str, tracking_uri: str | None = None
-) -> dict[str, Any]:
+
+def get_backtest_summary(run_id: str, tracking_uri: str | None = None) -> dict[str, Any]:
     """Return summary metrics for a single run.
 
     Source priority: MLflow run metrics -> port_analysis artifact.
@@ -330,10 +343,14 @@ def get_backtest_summary(
     # 2. Try port_analysis artifact for anything still missing
     missing = [k for k, v in summary.items() if v is None]
     if missing:
-        art = find_artifact(run_id, _PORT_ANALYSIS_CANDIDATES, _PORT_ANALYSIS_BASENAME, tracking_uri)
+        art = find_artifact(
+            run_id, _PORT_ANALYSIS_CANDIDATES, _PORT_ANALYSIS_BASENAME, tracking_uri
+        )
         warnings.extend(art["warnings"])
         if art["path"] is not None:
-            result = load_pickle_artifact(run_id, art["resolved_as"] or _PORT_ANALYSIS_CANDIDATES[0], tracking_uri)
+            result = load_pickle_artifact(
+                run_id, art["resolved_as"] or _PORT_ANALYSIS_CANDIDATES[0], tracking_uri
+            )
             if result["data"] is not None:
                 sources.append(art["resolved_as"] or _PORT_ANALYSIS_CANDIDATES[0])
                 extracted = _extract_from_port_analysis(result["data"])
@@ -355,9 +372,7 @@ def get_backtest_summary(
     }
 
 
-def get_return_curves(
-    run_id: str, tracking_uri: str | None = None
-) -> dict[str, Any]:
+def get_return_curves(run_id: str, tracking_uri: str | None = None) -> dict[str, Any]:
     """Load report_normal and compute nav / drawdown curves."""
     warnings: list[str] = []
 
@@ -406,9 +421,7 @@ def get_return_curves(
     return {"run_id": run_id, "curves": curves, "coverage": coverage, "warnings": warnings}
 
 
-def get_risk_table(
-    run_id: str, tracking_uri: str | None = None
-) -> dict[str, Any]:
+def get_risk_table(run_id: str, tracking_uri: str | None = None) -> dict[str, Any]:
     """Load port_analysis and return a flat list of group/metric/value rows."""
     warnings: list[str] = []
 
@@ -418,7 +431,9 @@ def get_risk_table(
     if art["path"] is None:
         return {"run_id": run_id, "risk_table": [], "warnings": warnings}
 
-    result = load_pickle_artifact(run_id, art["resolved_as"] or _PORT_ANALYSIS_CANDIDATES[0], tracking_uri)
+    result = load_pickle_artifact(
+        run_id, art["resolved_as"] or _PORT_ANALYSIS_CANDIDATES[0], tracking_uri
+    )
     if result["data"] is None:
         warnings.extend(result["warnings"])
         return {"run_id": run_id, "risk_table": [], "warnings": warnings}
@@ -434,11 +449,13 @@ def get_risk_table(
                 for metric_name in sub.index:
                     val = sub.loc[metric_name]
                     v = val["risk"] if isinstance(val, pd.Series) and "risk" in val.index else val
-                    risk_table.append({
-                        "group": str(group),
-                        "metric": str(metric_name),
-                        "value": _safe_float(v),
-                    })
+                    risk_table.append(
+                        {
+                            "group": str(group),
+                            "metric": str(metric_name),
+                            "value": _safe_float(v),
+                        }
+                    )
         except Exception as e:
             warnings.append(f"Failed to parse port_analysis DataFrame: {e}")
 
@@ -447,31 +464,32 @@ def get_risk_table(
             for key, val in port_analysis.items():
                 if isinstance(val, dict):
                     for metric_name, metric_val in val.items():
-                        risk_table.append({
-                            "group": str(key),
-                            "metric": str(metric_name),
-                            "value": _safe_float(metric_val),
-                        })
+                        risk_table.append(
+                            {
+                                "group": str(key),
+                                "metric": str(metric_name),
+                                "value": _safe_float(metric_val),
+                            }
+                        )
                 else:
-                    risk_table.append({
-                        "group": "default",
-                        "metric": str(key),
-                        "value": _safe_float(val),
-                    })
+                    risk_table.append(
+                        {
+                            "group": "default",
+                            "metric": str(key),
+                            "value": _safe_float(val),
+                        }
+                    )
         except Exception as e:
             warnings.append(f"Failed to parse port_analysis dict: {e}")
     else:
         warnings.append(
-            f"port_analysis is {type(port_analysis).__name__}, "
-            "expected DataFrame or dict"
+            f"port_analysis is {type(port_analysis).__name__}, expected DataFrame or dict"
         )
 
     return {"run_id": run_id, "risk_table": risk_table, "warnings": warnings}
 
 
-def get_indicator_preview(
-    run_id: str, tracking_uri: str | None = None
-) -> dict[str, Any]:
+def get_indicator_preview(run_id: str, tracking_uri: str | None = None) -> dict[str, Any]:
     """Load indicator_analysis and return a simple preview table."""
     warnings: list[str] = []
 
@@ -488,7 +506,9 @@ def get_indicator_preview(
             "warnings": warnings,
         }
 
-    result = load_pickle_artifact(run_id, art["resolved_as"] or _INDICATOR_CANDIDATES[0], tracking_uri)
+    result = load_pickle_artifact(
+        run_id, art["resolved_as"] or _INDICATOR_CANDIDATES[0], tracking_uri
+    )
     if result["data"] is None:
         warnings.extend(result["warnings"])
         return {
@@ -543,7 +563,16 @@ def get_indicator_preview(
             first_val = next(iter(indicator.values()), None)
             if isinstance(first_val, (list, pd.Series)):
                 for i, v in enumerate(list(first_val)[:50]):
-                    rows.append({"_index": i, **{str(k): _to_python(indicator[k][i]) for k in columns if i < len(indicator[k])}})
+                    rows.append(
+                        {
+                            "_index": i,
+                            **{
+                                str(k): _to_python(indicator[k][i])
+                                for k in columns
+                                if i < len(indicator[k])
+                            },
+                        }
+                    )
             return {
                 "run_id": run_id,
                 "columns": [str(c) for c in columns],
@@ -564,10 +593,7 @@ def get_indicator_preview(
             }
 
     else:
-        warnings.append(
-            f"indicator is {type(indicator).__name__}, "
-            "expected DataFrame or dict"
-        )
+        warnings.append(f"indicator is {type(indicator).__name__}, expected DataFrame or dict")
         return {
             "run_id": run_id,
             "columns": [],
@@ -578,9 +604,7 @@ def get_indicator_preview(
         }
 
 
-def compare_runs(
-    run_ids: list[str], tracking_uri: str | None = None
-) -> dict[str, Any]:
+def compare_runs(run_ids: list[str], tracking_uri: str | None = None) -> dict[str, Any]:
     """Compare key metrics across multiple runs."""
     warnings: list[str] = []
     runs: list[dict[str, Any]] = []
@@ -590,11 +614,13 @@ def compare_runs(
         warnings.extend(summary_result["warnings"])
         s = summary_result["summary"]
 
-        runs.append({
-            "run_id": rid,
-            "annualized_return": s.get("annualized_return"),
-            "information_ratio": s.get("information_ratio"),
-            "max_drawdown": s.get("max_drawdown"),
-        })
+        runs.append(
+            {
+                "run_id": rid,
+                "annualized_return": s.get("annualized_return"),
+                "information_ratio": s.get("information_ratio"),
+                "max_drawdown": s.get("max_drawdown"),
+            }
+        )
 
     return {"runs": runs, "warnings": warnings}

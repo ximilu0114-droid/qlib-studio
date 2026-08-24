@@ -79,6 +79,7 @@ class ArtifactListResponse(BaseModel):
 class MlflowStatusResponse(BaseModel):
     mlflow_tracking_uri: str
     resolved_mlruns_path: str
+    tracking_backend: str
     path_exists: bool
     experiment_count: int
     run_count: int

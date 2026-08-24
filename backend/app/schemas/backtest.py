@@ -6,10 +6,10 @@ from typing import Any
 
 from pydantic import BaseModel
 
-
 # ---------------------------------------------------------------------------
 # Request
 # ---------------------------------------------------------------------------
+
 
 class CompareRequest(BaseModel):
     run_ids: list[str]
@@ -18,6 +18,7 @@ class CompareRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Shared
 # ---------------------------------------------------------------------------
+
 
 class SummaryMetrics(BaseModel):
     annualized_return: float | None = None
@@ -35,6 +36,7 @@ class SummaryMetrics(BaseModel):
 # /backtest/runs/{run_id}/summary
 # ---------------------------------------------------------------------------
 
+
 class BacktestSummaryResponse(BaseModel):
     run_id: str
     summary: SummaryMetrics = SummaryMetrics()
@@ -45,6 +47,7 @@ class BacktestSummaryResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # /backtest/runs/{run_id}/curves
 # ---------------------------------------------------------------------------
+
 
 class CurvePoint(BaseModel):
     date: str
@@ -77,6 +80,7 @@ class CurveDataResponse(BaseModel):
 # /backtest/runs/{run_id}/risk
 # ---------------------------------------------------------------------------
 
+
 class RiskRow(BaseModel):
     group: str
     metric: str
@@ -93,6 +97,7 @@ class RiskTableResponse(BaseModel):
 # /backtest/runs/{run_id}/indicators
 # ---------------------------------------------------------------------------
 
+
 class IndicatorPreviewResponse(BaseModel):
     run_id: str
     columns: list[str] = []
@@ -105,6 +110,7 @@ class IndicatorPreviewResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # /backtest/compare
 # ---------------------------------------------------------------------------
+
 
 class CompareRunEntry(BaseModel):
     run_id: str

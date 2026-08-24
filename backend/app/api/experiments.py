@@ -128,13 +128,25 @@ def mlflow_status(db: Session = Depends(get_db)):
     warnings: list[str] = []
 
     resolved_path = ""
-    if tracking_uri and tracking_uri.startswith("file:"):
+    tracking_backend = "unknown"
+    if tracking_uri and tracking_uri.startswith(("http://", "https://")):
+        resolved_path = tracking_uri
+        tracking_backend = "remote"
+    elif tracking_uri and tracking_uri.startswith("file:"):
         resolved_path = tracking_uri[5:]
+        tracking_backend = "local"
     elif tracking_uri:
         resolved_path = tracking_uri
+        tracking_backend = "local"
 
-    path_exists = Path(resolved_path).is_dir() if resolved_path else False
-    if not path_exists and resolved_path:
+    path_exists = (
+        True
+        if tracking_backend == "remote"
+        else Path(resolved_path).is_dir()
+        if resolved_path
+        else False
+    )
+    if tracking_backend == "local" and not path_exists and resolved_path:
         warnings.append(f"MLflow tracking path does not exist: {resolved_path}")
 
     experiment_count = 0
@@ -159,6 +171,7 @@ def mlflow_status(db: Session = Depends(get_db)):
     return MlflowStatusResponse(
         mlflow_tracking_uri=tracking_uri or "",
         resolved_mlruns_path=resolved_path,
+        tracking_backend=tracking_backend,
         path_exists=path_exists,
         experiment_count=experiment_count,
         run_count=run_count,

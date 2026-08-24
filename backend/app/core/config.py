@@ -1,10 +1,28 @@
+import os
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-STORAGE_DIR = PROJECT_ROOT / "storage"
-STORAGE_DIR.mkdir(exist_ok=True)
+
+
+def _project_path(value: str | Path) -> Path:
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    return path.resolve()
+
+
+def _package_version() -> str:
+    try:
+        return version("qlib-studio")
+    except PackageNotFoundError:
+        return "0.2.0a0"
+
+
+STORAGE_DIR = _project_path(os.environ.get("QLIB_STUDIO_STORAGE_DIR", "storage"))
+STORAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 CONFIGS_DIR = PROJECT_ROOT / "configs" / "qlib_templates"
 CONFIGS_DIR.mkdir(parents=True, exist_ok=True)
@@ -23,7 +41,7 @@ DEFAULT_QLIB_DATA_PATH = str(Path.home() / ".qlib" / "qlib_data" / "cn_data")
 
 class Settings(BaseSettings):
     app_name: str = "Qlib Studio"
-    app_version: str = "0.1.0"
+    app_version: str = _package_version()
     debug: bool = False
 
     database_url: str = f"sqlite:///{STORAGE_DIR / 'qlib_studio.db'}"

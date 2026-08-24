@@ -46,5 +46,12 @@ build/
 # Logs
 *.log
 
+# Test and browser artifacts
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.playwright-mcp/
+
 # Zip files
 *.zip

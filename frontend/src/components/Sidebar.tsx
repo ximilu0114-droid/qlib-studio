@@ -1,11 +1,12 @@
 import { useTranslation } from "../i18n";
 
 interface Props {
+  appVersion: string;
   currentPage: string;
   onNavigate: (page: string) => void;
 }
 
-export default function Sidebar({ currentPage, onNavigate }: Props) {
+export default function Sidebar({ appVersion, currentPage, onNavigate }: Props) {
   const { t, language, setLanguage } = useTranslation();
 
   return (
@@ -15,7 +16,7 @@ export default function Sidebar({ currentPage, onNavigate }: Props) {
           Qlib Studio
         </h1>
         <span className="text-on-surface-variant font-label-mono text-label-mono mt-1 block">
-          v0.2.0-alpha
+          {appVersion ? `v${appVersion}` : "version unavailable"}
         </span>
       </div>
       <div className="flex-1 px-2 space-y-1">

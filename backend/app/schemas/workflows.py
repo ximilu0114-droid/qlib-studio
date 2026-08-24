@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TemplateItem(BaseModel):
@@ -57,6 +57,8 @@ class JobCreateRequest(BaseModel):
 
 
 class JobResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     type: str
     scenario: Optional[str] = None
@@ -68,9 +70,6 @@ class JobResponse(BaseModel):
     finished_at: Optional[datetime] = None
     exit_code: Optional[int] = None
     log_path: Optional[str] = None
-
-    class Config:
-        from_attributes = True
 
 
 class JobListResponse(BaseModel):

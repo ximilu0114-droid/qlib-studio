@@ -261,8 +261,14 @@ export default function ExperimentCenter() {
         {mlflowStatus && (
           <div className="mt-2 space-y-1">
             <p className="text-on-surface-variant font-body-sm text-xs">
-              {t('experiment.resolvedPath')}: <code className="bg-surface-container-low px-1 rounded">{mlflowStatus.resolved_mlruns_path}</code>
-              {!mlflowStatus.path_exists && (
+              {mlflowStatus.tracking_backend === "remote"
+                ? t('experiment.trackingEndpoint')
+                : t('experiment.resolvedPath')}: <code className="bg-surface-container-low px-1 rounded">
+                {mlflowStatus.tracking_backend === "remote"
+                  ? mlflowStatus.mlflow_tracking_uri
+                  : mlflowStatus.resolved_mlruns_path}
+              </code>
+              {mlflowStatus.tracking_backend === "local" && !mlflowStatus.path_exists && (
                 <span className="text-error ml-2">{t('experiment.doesNotExist')}</span>
               )}
             </p>
@@ -316,7 +322,9 @@ export default function ExperimentCenter() {
                     <p className="text-xs text-yellow-800">
                       {t('experiment.noRunsFound')}. {t('experiment.runQlibWorkflowToCreate')}
                       {" "}<code className="bg-yellow-100 px-1 rounded">
-                        {mlflowStatus?.resolved_mlruns_path || trackingUriInput}
+                        {mlflowStatus?.tracking_backend === "remote"
+                          ? mlflowStatus.mlflow_tracking_uri
+                          : mlflowStatus?.resolved_mlruns_path || trackingUriInput}
                       </code>
                     </p>
                   </div>

@@ -84,8 +84,7 @@ def _resolve_working_dir(working_dir: str) -> Path:
 
     if resolved not in _SAFE_WORKING_DIRS:
         raise ValueError(
-            "Working directory must be '.', project root, backend, "
-            "or QLIB_STUDIO_SAFE_WORKING_DIR"
+            "Working directory must be '.', project root, backend, or QLIB_STUDIO_SAFE_WORKING_DIR"
         )
 
     return resolved
@@ -117,9 +116,7 @@ def _validate_env_vars(env_vars: dict[str, str]) -> dict[str, str]:
         if "=" in clean_key or "\n" in clean_key or "\0" in clean_key:
             raise ValueError(f"Invalid environment variable name: {clean_key!r}")
         if clean_key.upper() in _DANGEROUS_ENV_KEYS:
-            raise ValueError(
-                f"Environment variable {clean_key!r} is not allowed to be overridden."
-            )
+            raise ValueError(f"Environment variable {clean_key!r} is not allowed to be overridden.")
         if "\0" in value or "\n" in value:
             raise ValueError(
                 f"Environment variable {clean_key!r} value contains disallowed characters."
@@ -179,8 +176,7 @@ def start_rdagent_job(
     """
     if scenario not in VALID_SCENARIOS:
         raise ValueError(
-            f"Invalid scenario: {scenario}. "
-            f"Must be one of: {', '.join(sorted(VALID_SCENARIOS))}"
+            f"Invalid scenario: {scenario}. Must be one of: {', '.join(sorted(VALID_SCENARIOS))}"
         )
 
     run_dir = _resolve_working_dir(working_dir)
@@ -266,12 +262,7 @@ def start_rdagent_job(
 
 def list_rdagent_jobs(db: Session) -> list[Job]:
     """List all RD-Agent jobs, newest first."""
-    return (
-        db.query(Job)
-        .filter(Job.type == "rdagent")
-        .order_by(Job.created_at.desc())
-        .all()
-    )
+    return db.query(Job).filter(Job.type == "rdagent").order_by(Job.created_at.desc()).all()
 
 
 def get_rdagent_job(db: Session, job_id: int) -> Job:

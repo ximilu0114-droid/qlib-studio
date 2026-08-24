@@ -10,16 +10,7 @@ Covers:
 """
 
 import json
-import os
 import pickle
-import tempfile
-from pathlib import Path
-
-os.environ.setdefault(
-    "QLIB_STUDIO_DATABASE_URL",
-    "sqlite:////tmp/qlib_studio_phase4_tests.sqlite",
-)
-Path("/tmp/qlib_studio_phase4_tests.sqlite").unlink(missing_ok=True)
 
 import numpy as np
 import pandas as pd
@@ -178,8 +169,6 @@ class TestToPythonJsonSafe:
 class TestPathContainment:
     def test_symlink_escape_blocked(self, tmp_path):
         """A symlink that points outside the artifact dir must be rejected."""
-        from app.services.backtest_artifact_loader import get_local_artifact_path
-
         artifact_dir = tmp_path / "artifacts"
         artifact_dir.mkdir()
         outside = tmp_path / "secret.pkl"
@@ -189,9 +178,6 @@ class TestPathContainment:
         link = artifact_dir / "escape.pkl"
         link.symlink_to(outside)
 
-        result = get_local_artifact_path.__wrapped__(
-            "fake_run", "escape.pkl", None
-        ) if hasattr(get_local_artifact_path, "__wrapped__") else None
         # We can't call the real function without MLflow, so test the logic directly
         from app.services.backtest_artifact_loader import _validate_artifact_path
 
@@ -269,8 +255,10 @@ class TestUriSchemeRejection:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result, err = _resolve_local_artifact_dir("test_run")
 
         assert result is None
@@ -287,8 +275,10 @@ class TestUriSchemeRejection:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result, err = _resolve_local_artifact_dir("test_run")
 
         assert result is None
@@ -305,8 +295,10 @@ class TestUriSchemeRejection:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result, err = _resolve_local_artifact_dir("test_run")
 
         assert result is None
@@ -323,8 +315,10 @@ class TestUriSchemeRejection:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result, err = _resolve_local_artifact_dir("test_run")
 
         assert result is None
@@ -345,8 +339,10 @@ class TestUriSchemeRejection:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result, err = _resolve_local_artifact_dir("test_run")
 
         assert result is not None
@@ -367,8 +363,10 @@ class TestUriSchemeRejection:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result, err = _resolve_local_artifact_dir("test_run")
 
         assert result is not None
@@ -396,8 +394,10 @@ class TestMissingArtifactWarnings:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result = load_pickle_artifact("test_run", "nonexistent.pkl")
 
         assert result["data"] is None
@@ -421,8 +421,10 @@ class TestMissingArtifactWarnings:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result = load_pickle_artifact("test_run", "bad.pkl")
 
         assert result["data"] is None
@@ -451,8 +453,10 @@ class TestBacktestAnalyzerShapes:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result = get_backtest_summary("test_run")
 
         assert "run_id" in result
@@ -479,8 +483,10 @@ class TestBacktestAnalyzerShapes:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result = get_return_curves("test_run")
 
         assert "run_id" in result
@@ -517,8 +523,10 @@ class TestBacktestAnalyzerShapes:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result = get_return_curves("test_run")
 
         assert len(result["curves"]) == 5
@@ -564,8 +572,10 @@ class TestBacktestAnalyzerShapes:
         mock_client = MagicMock()
         mock_client.get_run.return_value = mock_run
 
-        with patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)), \
-             patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client):
+        with (
+            patch("app.services.backtest_artifact_loader._check_mlflow", return_value=(True, None)),
+            patch("app.services.backtest_artifact_loader._get_client", return_value=mock_client),
+        ):
             result = get_risk_table("test_run")
 
         assert "run_id" in result
@@ -593,8 +603,10 @@ class TestBacktestEndpoints:
         """Even with fake runs, the compare endpoint should return valid JSON."""
         from unittest.mock import patch
 
-        with patch("app.api.backtest.run_exists", return_value=True), \
-             patch("app.services.backtest_analyzer.get_backtest_summary") as mock_summary:
+        with (
+            patch("app.api.backtest.run_exists", return_value=True),
+            patch("app.services.backtest_analyzer.get_backtest_summary") as mock_summary,
+        ):
             mock_summary.return_value = {
                 "run_id": "fake1",
                 "summary": {

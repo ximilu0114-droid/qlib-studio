@@ -1,10 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException
 
-from app.db.database import get_db
 from app.schemas.workflows import (
-    JobCreateRequest,
-    JobResponse,
     TemplateContentResponse,
     TemplateItem,
     TemplateListResponse,
@@ -13,7 +9,7 @@ from app.schemas.workflows import (
     WorkflowSaveResponse,
     WorkflowTemplate,
 )
-from app.services import job_runner, template_service, workflow_service
+from app.services import template_service, workflow_service
 
 router = APIRouter(tags=["workflows"])
 

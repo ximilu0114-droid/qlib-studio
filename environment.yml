@@ -1,0 +1,9 @@
+name: qlib-studio
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - nodejs>=22.12,<25
+  - pip
+  - pip:
+      - -e ./backend[dev,mlflow,qlib,rdagent]

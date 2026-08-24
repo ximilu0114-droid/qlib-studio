@@ -1,18 +1,14 @@
-import os
 import stat
 import time
 from pathlib import Path
-
-os.environ.setdefault(
-    "QLIB_STUDIO_DATABASE_URL",
-    "sqlite:////tmp/qlib_studio_phase5_tests.sqlite",
-)
-Path("/tmp/qlib_studio_phase5_tests.sqlite").unlink(missing_ok=True)
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
 
+from app.core.config import PROJECT_ROOT
 from app.main import app
+from app.services import rdagent_checker
 from app.services.rdagent_runner import VALID_SCENARIOS
 
 
@@ -47,6 +43,49 @@ def test_supported_scenarios_are_exact():
         "fin_quant",
         "fin_factor_report",
     }
+
+
+def test_rdagent_version_comes_from_package_metadata(monkeypatch):
+    monkeypatch.setattr(rdagent_checker.shutil, "which", lambda command: "/usr/bin/rdagent")
+    monkeypatch.setattr(rdagent_checker, "version", lambda package: "0.8.0")
+
+    assert rdagent_checker._check_rdagent_installed() == (True, "0.8.0")
+
+
+def test_health_check_rejects_false_healthy_output(monkeypatch):
+    monkeypatch.setattr(rdagent_checker.shutil, "which", lambda command: "/usr/bin/rdagent")
+    monkeypatch.setattr(rdagent_checker, "_check_docker_daemon", lambda: False)
+    monkeypatch.setattr(
+        rdagent_checker.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(
+            returncode=0,
+            stdout="ERROR Docker status is exception\nSTATUS: System Healthy.",
+            stderr="",
+        ),
+    )
+
+    result = rdagent_checker.run_health_check()
+
+    assert result["success"] is False
+    assert any("Docker daemon" in warning for warning in result["warnings"])
+    assert any("contains an error" in warning for warning in result["warnings"])
+
+
+def test_relative_rdagent_settings_resolve_from_project_root(client):
+    response = client.post(
+        "/api/settings/rdagent",
+        json={
+            "rdagent_working_dir": ".",
+            "rdagent_output_dir": "storage/rdagent_outputs",
+            "rdagent_env_file": ".env",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["rdagent_working_dir"] == str(PROJECT_ROOT)
+    assert body["rdagent_output_dir"] == str(PROJECT_ROOT / "storage/rdagent_outputs")
 
 
 def test_invalid_scenario_returns_400(client):
@@ -94,7 +133,7 @@ def test_rdagent_logs_and_command_args_are_redacted(client, monkeypatch, tmp_pat
     bin_dir = make_fake_rdagent(
         tmp_path,
         "#!/bin/sh\n"
-        "echo args: \"$@\"\n"
+        'echo args: "$@"\n'
         f"echo OPENAI_API_KEY={secret}\n"
         "echo AZURE_API_BASE=https://private.example.test\n"
         "exit 0\n",

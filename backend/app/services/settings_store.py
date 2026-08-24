@@ -100,8 +100,11 @@ def set_mlflow_tracking_uri(db: Session, uri: str) -> str:
 
 
 def _normalize_local_path(path: str) -> str:
-    """Normalize a local path: strip whitespace, expand ~, resolve."""
-    return str(Path(path.strip()).expanduser().resolve())
+    """Normalize a local path relative to the project root."""
+    candidate = Path(path.strip()).expanduser()
+    if not candidate.is_absolute():
+        candidate = PROJECT_ROOT / candidate
+    return str(candidate.resolve())
 
 
 def get_rdagent_working_dir(db: Session) -> str:

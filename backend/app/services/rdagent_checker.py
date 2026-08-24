@@ -1,7 +1,7 @@
-import os
 import shutil
 import subprocess
 import sys
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from app.core.config import RDAGENT_OUTPUT_DIR, RDAGENT_WORKING_DIR
@@ -30,16 +30,9 @@ def _check_rdagent_installed() -> tuple[bool, str | None]:
         return False, None
 
     try:
-        result = subprocess.run(
-            ["rdagent", "--version"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        version = result.stdout.strip() or result.stderr.strip()
-        return True, version or "installed (version unknown)"
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return True, "installed (version check failed)"
+        return True, version("rdagent")
+    except PackageNotFoundError:
+        return True, "installed (version unknown)"
 
 
 def _check_docker_installed() -> tuple[bool, str | None]:
@@ -175,8 +168,7 @@ def check_rdagent_status(
     resolved_output_dir = _resolve_path(output_dir or RDAGENT_OUTPUT_DIR, project_root)
     output_dir_exists = _check_output_dir(resolved_output_dir)
 
-    # ready = rdagent installed AND Docker daemon reachable
-    ready = rdagent_installed and docker_available
+    ready = rdagent_installed and docker_available and env_file_exists and llm_config_detected
 
     return {
         "python_version": python_version,
@@ -225,8 +217,16 @@ def run_health_check() -> dict:
             text=True,
             timeout=30,
         )
+        docker_available = _check_docker_daemon()
+        combined_output = f"{result.stdout}\n{result.stderr}".lower()
+        output_has_error = " error " in f" {combined_output} " or "exception" in combined_output
+        success = result.returncode == 0 and docker_available and not output_has_error
+        if not docker_available:
+            warnings.append("Docker daemon is not reachable; RD-Agent is not ready.")
+        if output_has_error:
+            warnings.append("RD-Agent health-check output contains an error.")
         return {
-            "success": result.returncode == 0,
+            "success": success,
             "return_code": result.returncode,
             "stdout": _sanitize_output(result.stdout),
             "stderr": _sanitize_output(result.stderr),

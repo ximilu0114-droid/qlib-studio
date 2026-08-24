@@ -168,6 +168,7 @@ export interface ArtifactListResponse {
 
 export interface MlflowStatusResponse {
   mlflow_tracking_uri: string;
+  tracking_backend: "local" | "remote";
   resolved_mlruns_path: string;
   path_exists: boolean;
   experiment_count: number;

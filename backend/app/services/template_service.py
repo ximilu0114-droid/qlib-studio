@@ -20,17 +20,21 @@ def list_templates() -> list[dict]:
     templates = []
 
     for yaml_file in sorted(CONFIGS_DIR.glob("*.yaml")):
-        templates.append({
-            "name": yaml_file.name,
-            "path": str(yaml_file),
-        })
+        templates.append(
+            {
+                "name": yaml_file.name,
+                "path": str(yaml_file),
+            }
+        )
 
     for yaml_file in sorted(CONFIGS_DIR.glob("*.yml")):
         if not any(t["name"] == yaml_file.name for t in templates):
-            templates.append({
-                "name": yaml_file.name,
-                "path": str(yaml_file),
-            })
+            templates.append(
+                {
+                    "name": yaml_file.name,
+                    "path": str(yaml_file),
+                }
+            )
 
     return templates
 

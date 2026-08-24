@@ -93,7 +93,9 @@ def resolve_working_dir(working_dir: str) -> Path:
         raise ValueError(f"Working directory does not exist: {raw_dir}")
 
     if resolved not in safe_dirs:
-        raise ValueError("Working directory must be '.', project root, backend, or QLIB_STUDIO_SAFE_WORKING_DIR")
+        raise ValueError(
+            "Working directory must be '.', project root, backend, or QLIB_STUDIO_SAFE_WORKING_DIR"
+        )
 
     return resolved
 

@@ -12,14 +12,15 @@ import re
 from pathlib import Path
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _check_mlflow() -> tuple[bool, str | None]:
     try:
         import mlflow  # noqa: F401
+
         return True, None
     except ImportError:
         return False, "mlflow is not installed. Install with: pip install mlflow"
@@ -32,10 +33,7 @@ def _get_client(tracking_uri: str | None = None):
 
     import mlflow
 
-    if tracking_uri:
-        mlflow.set_tracking_uri(tracking_uri)
-
-    return mlflow.MlflowClient()
+    return mlflow.MlflowClient(tracking_uri=tracking_uri)
 
 
 def _validate_artifact_path(artifact_path: str) -> tuple[str | None, str | None]:
@@ -102,9 +100,9 @@ def _resolve_local_artifact_dir(
     # Only support local file: URIs; reject all other schemes.
     path_str = artifact_uri
     if path_str.startswith("file://"):
-        path_str = path_str[len("file://"):]
+        path_str = path_str[len("file://") :]
     elif path_str.startswith("file:"):
-        path_str = path_str[len("file:"):]
+        path_str = path_str[len("file:") :]
     elif "://" in path_str or re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:/", path_str):
         # Covers s3://, gs://, mlflow-artifacts://, dbfs:/, wasbs://, etc.
         return None, "Only local file artifacts are supported in Phase 4."
@@ -122,6 +120,7 @@ def _resolve_local_artifact_dir(
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def get_local_artifact_path(
     run_id: str,
@@ -287,7 +286,11 @@ def find_artifact_by_basename(
 
     Returns::
 
-        {"path": "/abs/path/to/file.pkl", "found_at": "portfolio_analysis/report_normal_1day.pkl", "warnings": []}
+        {
+            "path": "/abs/path/to/file.pkl",
+            "found_at": "portfolio_analysis/report_normal_1day.pkl",
+            "warnings": [],
+        }
         # or
         {"path": None, "found_at": None, "warnings": ["not found"]}
     """
@@ -319,7 +322,12 @@ def find_artifact(
 
     Returns::
 
-        {"path": "/abs/path", "resolved_as": "portfolio_analysis/report_normal_1day.pkl", "all_artifacts": [...], "warnings": []}
+        {
+            "path": "/abs/path",
+            "resolved_as": "portfolio_analysis/report_normal_1day.pkl",
+            "all_artifacts": [...],
+            "warnings": [],
+        }
     """
     # 1. Try exact candidate paths
     result = find_artifact_by_candidates(run_id, candidate_paths, tracking_uri)

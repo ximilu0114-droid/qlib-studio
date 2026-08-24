@@ -1,334 +1,182 @@
 # Qlib Studio
 
+[![CI](https://github.com/ximilu0114-droid/qlib-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/ximilu0114-droid/qlib-studio/actions/workflows/ci.yml)
+
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-Qlib Studio 是一个面向 [Microsoft Qlib](https://github.com/microsoft/qlib) 的本地 Web 研究工作台。它把量化研究里常见的环境检查、数据路径校验、工作流编辑与运行、任务日志查看、MLflow 实验浏览、回测分析和 RD-Agent 集成整合到一个浏览器界面里。
+Qlib Studio 是一个面向 [Microsoft Qlib](https://github.com/microsoft/qlib) 的本地全栈量化研究工作台。它把环境检查、YAML 编辑、`qrun` 执行、MLflow 实验查看和回测分析整合进一个浏览器应用，并为 [RD-Agent](https://github.com/microsoft/RD-Agent) 提供带安全约束的启动器与健康看板。
 
-项目默认在本机运行。你的 Qlib 数据、工作流文件、SQLite 数据库、任务日志和 MLflow artifacts 都保存在本地；除非你主动配置远程 MLflow 服务。
+> 本项目仅用于研究，不构成投资建议，不连接券商，也不包含实盘交易能力。
 
-## 亮点
+## 核心能力
 
-- 本地看板：检查 Qlib、Python、MLflow 和数据集就绪状态。
-- 持久化配置：保存 Qlib 数据路径和 MLflow Tracking URI。
-- 内置 LightGBM Alpha158、Alpha360 Qlib 工作流模板。
-- YAML 工作流编辑器，保存文件到 `storage/workflows/`。
-- 在 Web UI 中运行 `qrun`、查看任务状态、查看日志、取消任务。
-- MLflow 实验中心：浏览 experiments、runs、params、metrics、tags 和 artifacts。
-- 回测分析器：收益曲线、回撤图、风险表、指标预览、多 run 对比。
-- RD-Agent 集成：自动化因子进化、模型进化和报告因子提取。
-- FastAPI 后端 + React/Vite 类型化前端。
+- 检查 Python、Qlib、MLflow 与数据集完整性。
+- 内置 LightGBM Alpha158 和 Alpha360 工作流模板。
+- 安全保存工作流，异步执行 `qrun`，实时查看日志并取消任务。
+- 浏览 MLflow experiments、runs、metrics、params、tags 与 artifacts。
+- 展示回测收益/回撤曲线、风险指标、交易指标预览与多 run 对比。
+- 检查 RD-Agent 依赖、脱敏健康检查输出并管理任务生命周期。
+- 中英文界面，适配桌面端和移动端。
+- FastAPI/OpenAPI 后端与类型化 React 前端。
 
-## 界面模块
+设置、工作流、日志和 SQLite 数据库默认都保留在本机 `storage/`；MLflow 默认使用本机 `mlruns/`。实验中心可以连接远程 MLflow Tracking Server，但回测 artifact 分析目前仅支持本地文件。
 
-Qlib Studio 当前包含五个主要页面：
-
-- **Workbench**：检查本地 Qlib 安装、MLflow 安装、数据路径、calendars、instruments 和 features。
-- **Workflows**：加载 YAML 模板，保存编辑后的工作流，启动 `qrun`，查看任务日志。
-- **Experiments**：读取 MLflow 实验结果，查看 runs 和 artifacts。
-- **Backtest Analyzer**：加载 Qlib 回测 artifacts，展示收益曲线、回撤图、风险分析表和多 run 对比。
-- **RD-Agent**：管理 RD-Agent 自动化研究任务，包括状态检查、任务生命周期和日志流。
-
-## Phase 4 — 回测分析器
-
-Phase 4 为 Qlib Studio 新增了回测分析页面。通过 `qrun` 运行 Qlib 工作流后，可以在浏览器中直接查看回测 artifacts。
-
-### 功能概览
-
-- 交互式图表：累计收益、基准收益、超额收益、回撤。
-- 摘要指标卡片：年化收益、信息比率、最大回撤、含成本 / 不含成本超额收益。
-- 风险分析表：按收益类型和指标分组。
-- 指标预览表：交易执行数据的列名、行数、日期范围和前几行数据。
-- 多 run 对比：选择两个或多个 run，并排比较关键指标。
-
-### 使用的 Qlib artifacts
-
-回测分析器从 MLflow run 的 artifact 目录读取以下 pickle 文件：
-
-| Artifact | 用途 |
-| --- | --- |
-| `portfolio_analysis/report_normal_1day.pkl` | 每日组合收益、基准收益、成本和换手率，用于构建收益和回撤曲线。 |
-| `portfolio_analysis/port_analysis_1day.pkl` | 风险分析指标（年化收益、信息比率、最大回撤），区分含成本和不含成本超额收益。 |
-| `indicator_analysis_1day.pkl` | 交易执行指标（成交率、价格优势等），以预览表形式展示。 |
-
-以上三个文件均由标准 Qlib 回测工作流生成。如果某个 artifact 缺失，对应区域会显示警告而非空白。
-
-### 图表
-
-- **累计收益**：策略净值、基准净值和超额净值随时间变化。
-- **回撤**：策略从峰值回撤随时间变化。
-
-两个图表均使用 Recharts，能优雅地处理 null 或缺失数据点。
-
-### 表格
-
-- **摘要指标**：年化收益、信息比率、最大回撤及超额收益变体。
-- **风险分析**：行为各指标，列为不含成本和含成本超额收益。
-- **指标预览**：列名、行数、日期范围以及指标数据的前几行。
-- **多 run 对比**：选择两个或多个 run，并排比较关键指标。
-
-### 如何使用
-
-1. 打开 **Workflows** 并通过 `qrun` 运行 Qlib 工作流。
-2. 等待任务完成（在 **Workflows** 中查看状态和日志）。
-3. 打开 **Experiments** 找到对应的 run，或直接进入 **Backtest Analyzer**。
-4. 选择实验和要分析的 run。
-5. 点击 **Analyze**。
-6. 图表、表格和警告会根据可用的 artifacts 自动加载。
-
-要对比多个 run，勾选两个或多个 run 旁边的复选框，然后点击 **Compare Selected**。
-
-### 限制
-
-- 仅支持本地 MLflow artifacts，本阶段不支持远程 MLflow 服务器。
-- 缺失的 artifacts 会显示警告而非报错，应用其他功能不受影响。
-- 实盘交易尚未包含。
-
-## Phase 5 — RD-Agent 集成
-
-Phase 5 为 Qlib Studio 新增了 [RD-Agent](https://github.com/microsoft/RD-Agent) 集成。RD-Agent 是微软的研究自动化框架，使用 LLM 迭代生成、评估和优化量化因子与模型。
-
-### 功能概览
-
-- 专用 **RD-Agent** 页面，管理自动化研究任务。
-- 状态面板：显示 RD-Agent 安装状态、Docker 可用性和 LLM 配置。
-- 一键健康检查：运行 `rdagent health_check`。
-- 任务生命周期管理：启动、监控日志、取消 RD-Agent 任务。
-- 可配置工作目录、输出目录和环境文件。
-- 每个任务的日志流和自动滚动。
-
-### 支持的场景
-
-| 场景 | 说明 |
-| --- | --- |
-| `fin_factor` | 迭代因子进化 — 自动生成和评估 alpha 因子。 |
-| `fin_model` | 迭代模型进化 — 自主训练和评估预测模型。 |
-| `fin_quant` | 因子 + 模型联合进化 — 端到端量化管线优化。 |
-| `fin_factor_report` | 报告因子提取 — 从研究报告中提取 alpha 因子。 |
-
-### 环境要求
-
-- **推荐 Linux。** RD-Agent 内部使用 Docker 容器。macOS 可用于开发，但生产环境推荐 Linux。
-- **Docker** 已安装且守护进程正在运行。用 `docker info` 验证。
-- **RD-Agent** 已安装。安装命令：`pip install rdagent`。
-- 项目根目录下有 `.env` 文件并配置了 LLM 密钥：
-  - `OPENAI_API_KEY` 和 `OPENAI_API_BASE` 用于 OpenAI 兼容端点。
-  - `CHAT_MODEL` 和 `EMBEDDING_MODEL` 用于模型选择。
-  - 完整列表参见 RD-Agent 的 `.env.example`。
-
-### 如何检查 RD-Agent 状态
-
-1. 打开 **RD-Agent** 页面。
-2. 状态面板显示：Python 版本、RD-Agent 安装及版本、Docker 状态、`.env` 文件和 LLM 配置检测、工作目录和输出目录。
-3. 所有检查均为非阻塞 — 缺失组件会显示警告。
-
-### 如何运行健康检查
-
-1. 打开 **RD-Agent** 页面。
-2. 点击 **Run Health Check**。
-3. `rdagent health_check --no-check-env` 的输出会显示在界面中。
-4. 密钥会自动脱敏。
-
-### 如何启动 RD-Agent 任务
-
-1. 打开 **RD-Agent** 页面。
-2. 选择场景（如 `fin_quant`）。
-3. 可选：添加额外参数或环境变量。
-4. 点击 **Start Job**。
-5. 在同一页面监控任务状态和日志。
-6. 随时点击 **Cancel** 取消运行中的任务。
-
-### 日志位置
-
-RD-Agent 任务日志保存在：
+## 架构
 
 ```text
-storage/logs/rdagent/{job_id}.log
+React + TypeScript + Vite (5173)
+             │ /api 代理
+             ▼
+FastAPI + SQLAlchemy (8000)
+   ├── qrun 子进程/任务管理器 ──► Qlib 数据
+   ├── MLflow Client ───────────► 本地 mlruns 或远程服务
+   ├── artifact 分析器 ─────────► 本地 Qlib pickle artifacts
+   └── RD-Agent 启动器 ─────────► Docker + LLM 配置
 ```
 
-每个日志文件包含场景、工作目录、命令和 `rdagent` 进程的完整 stdout/stderr 输出。
+## 环境要求
 
-### 当前限制
+- Conda（推荐）或 Python 3.10+
+- Node.js 22.12+ 和 npm
+- 已准备好的 Qlib 数据；默认路径为 `~/.qlib/qlib_data/cn_data`
+- 仅使用 RD-Agent 时需要：运行中的 Docker daemon 和 LLM 配置
 
-- 尚无自动因子注册。RD-Agent 输出需手动集成到 Qlib 工作流。
-- 尚无自动模型注册。生成的模型不会自动添加到 Qlib 模型库。
-- 尚无从 RD-Agent 输出自动生成 Qlib 工作流。
-- 实盘交易尚未包含。
-- 大多数 RD-Agent 场景需要 Docker。纯本地执行尚未完全支持。
+仓库固定了已联合验证的核心集成版本：pyqlib 0.9.7、MLflow 3.11.1、RD-Agent 0.8.0。完整约束见 `backend/pyproject.toml`。
 
-## 技术栈
-
-| 层级 | 技术 |
-| --- | --- |
-| 后端 | Python 3.10+, FastAPI, SQLAlchemy, Pydantic |
-| 前端 | React 18, TypeScript, Vite, Tailwind CSS |
-| 存储 | SQLite, 本地文件系统 |
-| 量化工作流 | Microsoft Qlib, `qrun` |
-| 实验追踪 | MLflow |
-| 研究自动化 | Microsoft RD-Agent, Docker |
-
-## 快速开始
-
-### 1. 克隆项目
+## 使用 Conda 快速启动
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/ximilu0114-droid/qlib-studio.git
 cd qlib-studio
+conda env create -f environment.yml
+conda activate qlib-studio
 ```
 
-如果你的本地目录名里有空格也没关系，后续需要时给路径加引号即可。
-
-### 2. 启动后端
+启动 API：
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-
-pip install -e ".[mlflow]" pyqlib
-python run.py
+python backend/run.py
 ```
 
-API 地址是 [http://localhost:8000](http://localhost:8000)。接口文档在 [http://localhost:8000/docs](http://localhost:8000/docs)。
-
-### 3. 启动前端
-
-打开第二个终端：
+在第二个终端启动前端：
 
 ```bash
+conda activate qlib-studio
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
-应用地址是 [http://localhost:5173](http://localhost:5173)。Vite 会把 `/api` 请求代理到 `localhost:8000`。
+打开 <http://localhost:5173>；API 文档位于 <http://localhost:8000/docs>。
 
-### 4. 配置 Qlib 数据
+### 安装到现有 Conda 环境
 
-默认检查的数据路径是：
-
-```text
-~/.qlib/qlib_data/cn_data
+```bash
+conda activate qlib-studio
+python -m pip install -e "./backend[dev,mlflow,qlib,rdagent]"
+cd frontend && npm ci
 ```
 
-如果你的 Qlib 数据在其他目录，打开 Workbench 页面修改数据路径。一个可用的数据目录通常需要包含 calendars、instruments 和 features。
+RD-Agent 的可选依赖较大；不使用时可改为 `"./backend[dev,mlflow,qlib]"`。
 
-### 5. 运行工作流
+## 配置并运行 Qlib
 
-1. 打开 **Workflows** 页面。
-2. 选择内置模板。
-3. 按需编辑 YAML。
-4. 保存为工作流文件。
-5. 点击 **Run qrun**。
-6. 在同一页面查看任务状态和日志。
+1. 打开 **Workbench**，确认 Qlib 数据集检查均通过；必要时修改数据路径。
+2. 打开 **Workflows**，选择 Alpha158 或 Alpha360，检查 YAML 后保存。
+3. 启动 `qrun`，查看任务状态和实时日志。
+4. 在 **Experiments** 中检查生成的 run。
+5. 在 **Backtest Analyzer** 中选择该 run，查看曲线、风险指标与交易指标。
 
-保存后的工作流位于 `storage/workflows/`。任务日志位于 `storage/logs/jobs/{job_id}.log`。
+保存的工作流位于 `storage/workflows/`；qrun 日志位于 `storage/logs/jobs/{job_id}.log`。
 
-## 配置
+回测分析器读取 Qlib 的标准 artifacts：
 
-Qlib Studio 使用本地默认配置，并把用户在界面中修改的设置保存到 SQLite。
+| Artifact | 用途 |
+| --- | --- |
+| `portfolio_analysis/report_normal_1day.pkl` | 收益、基准、成本、换手率与回撤 |
+| `portfolio_analysis/port_analysis_1day.pkl` | 年化收益、信息比率与最大回撤 |
+| `portfolio_analysis/indicator_analysis_1day.pkl` | 交易执行指标预览 |
 
-| 配置项 | 默认值 | 修改位置 |
+artifact 缺失时只对相关区域给出警告，不会使整个分析失败。pickle 文件在加载时可能执行代码，因此只能分析来自可信 Qlib/MLflow run 的 artifacts。
+
+## 可选：配置 RD-Agent
+
+1. 启动 Docker，并用 `docker info` 验证 daemon 可访问。
+2. 将 `.env.example` 复制为 `.env`，填写服务商、对话模型、向量模型和密钥；不要提交 `.env`。
+3. 打开 **RD-Agent**，确认就绪检查全部通过，再运行健康检查。
+4. 选择 `fin_factor`、`fin_model`、`fin_quant` 或 `fin_factor_report` 并启动任务。
+
+RD-Agent 日志写入 `storage/logs/rdagent/{job_id}.log`；相对路径统一以仓库根目录解析。多数 RD-Agent 场景依赖 Docker，并可能消耗较多 LLM 配额与计算资源。
+
+## 配置项
+
+| 配置 | 默认值 | 修改位置 |
 | --- | --- | --- |
-| Qlib 数据路径 | `~/.qlib/qlib_data/cn_data` | Workbench 页面 |
-| MLflow Tracking URI | `file:./mlruns` | Experiments 页面 |
-| RD-Agent 工作目录 | `.`（项目根目录） | RD-Agent 页面 |
-| RD-Agent 输出目录 | `storage/rdagent_outputs` | RD-Agent 页面 |
-| RD-Agent 环境文件 | `.env` | RD-Agent 页面 |
-| 后端地址 | `http://localhost:8000` | `frontend/vite.config.ts` proxy |
-| 前端地址 | `http://localhost:5173` | Vite dev server |
+| Qlib 数据 | `~/.qlib/qlib_data/cn_data` | Workbench |
+| MLflow Tracking URI | `file:<仓库>/mlruns` | Experiments |
+| RD-Agent 工作目录 | 仓库根目录 | RD-Agent |
+| RD-Agent 输出目录 | `<仓库>/storage/rdagent_outputs` | RD-Agent |
+| RD-Agent 环境文件 | `.env` | RD-Agent |
+| 应用数据目录 | `<仓库>/storage` | `QLIB_STUDIO_STORAGE_DIR` 覆盖 |
+| 额外允许的 qrun 目录 | 未设置 | `QLIB_STUDIO_SAFE_WORKING_DIR` |
 
-后端支持 `QLIB_STUDIO_` 前缀的环境变量，例如：
+后端配置均支持 `QLIB_STUDIO_` 环境变量前缀，例如 `QLIB_STUDIO_DEBUG=true`。
 
-```bash
-QLIB_STUDIO_DEBUG=true python run.py
-```
-
-为了降低误操作风险，`qrun` 的工作目录默认限制在项目根目录、`backend/`，或通过 `QLIB_STUDIO_SAFE_WORKING_DIR` 指定的目录中。
+## 开发与验证
 
 ```bash
-export QLIB_STUDIO_SAFE_WORKING_DIR=/path/to/research/workspace
+conda activate qlib-studio
+
+cd backend
+python -m ruff format --check app tests
+python -m ruff check app tests
+python -m pytest -q
+python -m pip check
+
+cd ../frontend
+npm ci
+npm audit
+npm run build
 ```
+
+测试套件会将数据库、工作流和日志隔离到临时目录，不会污染开发者真实的 `storage/`。GitHub Actions 会执行相同的格式检查、静态检查、测试、类型检查、安全审计和生产构建。
 
 ## 项目结构
 
 ```text
 qlib-studio/
 ├── backend/
-│   ├── app/
-│   │   ├── api/          # FastAPI 路由
-│   │   ├── core/         # 应用配置
-│   │   ├── db/           # SQLite 模型和会话
-│   │   ├── schemas/      # Pydantic 请求/响应模型
-│   │   └── services/     # Qlib、workflow、job、MLflow、RD-Agent 服务
+│   ├── app/{api,core,db,schemas,services}/
 │   ├── tests/
-│   ├── pyproject.toml
-│   └── run.py
-├── configs/
-│   └── qlib_templates/   # 内置 Qlib workflow YAML 模板
-├── frontend/
-│   ├── src/
-│   │   ├── api/          # API client
-│   │   ├── components/   # 看板、工作流、实验中心、RD-Agent UI
-│   │   └── types/        # 共享 TypeScript API 类型
-│   ├── package.json
-│   └── vite.config.ts
-└── storage/
-    ├── qlib_studio.db    # 自动创建的 SQLite 数据库
-    ├── workflows/        # 保存的 workflow YAML 文件
-    └── logs/
-        ├── jobs/         # 每个 qrun 任务的日志
-        └── rdagent/      # 每个 RD-Agent 任务的日志
+│   └── pyproject.toml
+├── configs/qlib_templates/
+├── frontend/src/{api,components,i18n,types}/
+├── storage/                  # 自动生成且被 git 忽略
+├── mlruns/                   # 自动生成且被 git 忽略
+├── environment.yml
+└── .github/workflows/ci.yml
 ```
 
-## API 概览
+## API 分组
 
-| 模块 | 接口 |
+`/docs` 生成的 OpenAPI 页面是接口的最终准确信息源。
+
+| 分组 | 代表接口 |
 | --- | --- |
-| Health | `GET /api/health` |
-| Qlib 状态 | `GET /api/qlib/status` |
-| Settings | `GET /api/settings`, `POST /api/settings/qlib-data-path`, `POST /api/settings/mlflow-tracking-uri`, `POST /api/settings/rdagent` |
-| Workflows | `GET /api/workflows/templates`, `GET /api/workflows/templates/{name}`, `POST /api/workflows/save`, `GET /api/workflows/list`, `GET /api/workflows/{filename}`, `PUT /api/workflows/{filename}` |
-| Jobs | `POST /api/jobs/qrun`, `GET /api/jobs`, `GET /api/jobs/{id}`, `GET /api/jobs/{id}/logs`, `POST /api/jobs/{id}/cancel` |
-| Experiments | `GET /api/experiments`, `GET /api/experiments/{id}`, `GET /api/experiments/{id}/runs`, `GET /api/runs/{id}`, `GET /api/runs/{id}/params`, `GET /api/runs/{id}/metrics`, `GET /api/runs/{id}/artifacts` |
-| Backtest | `GET /api/backtest/runs/{id}/summary`, `GET /api/backtest/runs/{id}/curves`, `GET /api/backtest/runs/{id}/risk`, `GET /api/backtest/runs/{id}/indicators`, `POST /api/backtest/compare` |
-| RD-Agent | `GET /api/rdagent/status`, `POST /api/rdagent/health-check`, `POST /api/rdagent/jobs`, `GET /api/rdagent/jobs`, `GET /api/rdagent/jobs/{id}`, `GET /api/rdagent/jobs/{id}/logs`, `POST /api/rdagent/jobs/{id}/cancel` |
+| 健康与设置 | `GET /api/health`、`GET /api/qlib/status`、`GET /api/settings` |
+| 工作流与任务 | `GET /api/workflows/templates`、`POST /api/workflows/save`、`POST /api/jobs/qrun` |
+| MLflow | `GET /api/mlflow/status`、`GET /api/experiments`、`GET /api/runs/{id}` |
+| 回测 | `GET /api/backtest/runs/{id}/summary`、`POST /api/backtest/compare` |
+| RD-Agent | `GET /api/rdagent/status`、`POST /api/rdagent/health-check`、`POST /api/rdagent/jobs` |
 
-## 开发
+## 当前边界
 
-运行后端测试：
-
-```bash
-cd backend
-pip install -e ".[dev,mlflow]" pyqlib
-pytest
-```
-
-构建前端：
-
-```bash
-cd frontend
-npm install
-npm run build
-```
-
-## 路线图
-
-| 阶段 | 功能 | 状态 |
-| --- | --- | --- |
-| Phase 1 | 基础能力和环境检查 | Done |
-| Phase 2 | Qlib workflow runner | Done |
-| Phase 3 | MLflow Experiment Center | Done |
-| Phase 4 | 回测分析和图表 | Done |
-| Phase 5 | RD-Agent 集成 | Current |
-| Phase 6 | RD-Agent 输出解析和因子/模型库 | Planned |
-| Phase 7 | 完整 AI 量化研究闭环 | Planned |
-
-## 说明
-
-- Qlib Studio 目前不会自动下载行情数据。请先准备 Qlib 数据，再在界面中配置目录。
-- Experiment Center 只读取 MLflow 数据，不会改写 runs 或 artifacts。
-- 如果 MLflow 未安装或 tracking path 不存在，应用其他功能仍然可用，Experiments 页面会显示空状态或提示信息。
+- Qlib 数据集需要单独准备。
+- 回测分析支持本地 MLflow artifacts，尚未实现远程 artifact 下载。
+- RD-Agent 输出尚未自动注册为 Qlib 因子或模型。
+- 当前没有身份认证或多用户隔离；除非自行增加访问控制，否则后端应只监听 localhost。
+- 实盘交易明确不在当前范围内。
 
 ## License
 
-MIT
+[MIT](LICENSE)

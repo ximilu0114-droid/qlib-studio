@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from app.core.config import WORKFLOWS_DIR
 
 
@@ -19,20 +17,24 @@ def list_workflow_templates() -> list[dict]:
     templates = []
     for yaml_file in sorted(WORKFLOWS_DIR.glob("*.yaml")):
         name = yaml_file.stem.replace("_", " ").replace("-", " ").title()
-        templates.append({
-            "filename": yaml_file.name,
-            "name": name,
-            "description": f"Workflow template: {name}",
-        })
+        templates.append(
+            {
+                "filename": yaml_file.name,
+                "name": name,
+                "description": f"Workflow template: {name}",
+            }
+        )
 
     for yaml_file in sorted(WORKFLOWS_DIR.glob("*.yml")):
         if not any(t["filename"] == yaml_file.name for t in templates):
             name = yaml_file.stem.replace("_", " ").replace("-", " ").title()
-            templates.append({
-                "filename": yaml_file.name,
-                "name": name,
-                "description": f"Workflow template: {name}",
-            })
+            templates.append(
+                {
+                    "filename": yaml_file.name,
+                    "name": name,
+                    "description": f"Workflow template: {name}",
+                }
+            )
 
     return templates
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 
-
 _SECRET_VALUE_PATTERNS = [
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
     re.compile(r"sess-[A-Za-z0-9_-]{20,}"),

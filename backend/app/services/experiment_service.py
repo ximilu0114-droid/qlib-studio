@@ -10,6 +10,7 @@ def _check_mlflow() -> tuple[bool, str | None]:
     """Check if mlflow is installed."""
     try:
         import mlflow  # noqa: F401
+
         return True, None
     except ImportError:
         return False, "mlflow is not installed. Install with: pip install mlflow"
@@ -31,11 +32,7 @@ def _get_client(tracking_uri: str | None = None):
 
     import mlflow
 
-    if tracking_uri:
-        mlflow.set_tracking_uri(tracking_uri)
-
-    client = mlflow.MlflowClient()
-    return client
+    return mlflow.MlflowClient(tracking_uri=tracking_uri)
 
 
 def _ms_to_iso(ms: int | None) -> str | None:
@@ -84,28 +81,27 @@ def list_experiments(tracking_uri: str | None = None) -> dict[str, Any]:
     results = []
     for exp in experiments:
         try:
-            runs = client.search_runs(
-                experiment_ids=[exp.experiment_id],
-                max_results=1,
-                output_format="list",
-            )
-            # Get full run count by searching with a large limit
+            # MlflowClient.search_runs returns a paged list. ``output_format``
+            # belongs to the high-level mlflow.search_runs API and causes a
+            # TypeError here, which previously made every count appear as zero.
             all_runs = client.search_runs(
                 experiment_ids=[exp.experiment_id],
                 max_results=10000,
-                output_format="list",
             )
             run_count = len(all_runs)
-        except Exception:
+        except Exception as exc:
             run_count = 0
+            warnings.append(f"Failed to count runs for experiment '{exp.experiment_id}': {exc}")
 
-        results.append({
-            "experiment_id": exp.experiment_id,
-            "name": exp.name,
-            "artifact_location": exp.artifact_location or "",
-            "lifecycle_stage": exp.lifecycle_stage or "active",
-            "run_count": run_count,
-        })
+        results.append(
+            {
+                "experiment_id": exp.experiment_id,
+                "name": exp.name,
+                "artifact_location": exp.artifact_location or "",
+                "lifecycle_stage": exp.lifecycle_stage or "active",
+                "run_count": run_count,
+            }
+        )
 
     return {"experiments": results, "warnings": warnings}
 
@@ -124,7 +120,6 @@ def get_experiment(experiment_id: str, tracking_uri: str | None = None) -> dict[
         all_runs = client.search_runs(
             experiment_ids=[experiment_id],
             max_results=10000,
-            output_format="list",
         )
         run_count = len(all_runs)
     except Exception:
@@ -139,7 +134,9 @@ def get_experiment(experiment_id: str, tracking_uri: str | None = None) -> dict[
     }
 
 
-def list_runs(experiment_id: str, tracking_uri: str | None = None, max_results: int = 100) -> dict[str, Any]:
+def list_runs(
+    experiment_id: str, tracking_uri: str | None = None, max_results: int = 100
+) -> dict[str, Any]:
     """List runs under an experiment, ordered by start time descending.
 
     Returns:
@@ -165,16 +162,18 @@ def list_runs(experiment_id: str, tracking_uri: str | None = None, max_results: 
         metrics_count = len(run.data.metrics) if run.data.metrics else 0
         params_count = len(run.data.params) if run.data.params else 0
 
-        results.append({
-            "run_id": run.info.run_id,
-            "status": run.info.status or "UNKNOWN",
-            "start_time": _ms_to_iso(start_ms),
-            "end_time": _ms_to_iso(end_ms),
-            "duration_seconds": _calc_duration(start_ms, end_ms),
-            "artifact_uri": run.info.artifact_uri,
-            "metrics_count": metrics_count,
-            "params_count": params_count,
-        })
+        results.append(
+            {
+                "run_id": run.info.run_id,
+                "status": run.info.status or "UNKNOWN",
+                "start_time": _ms_to_iso(start_ms),
+                "end_time": _ms_to_iso(end_ms),
+                "duration_seconds": _calc_duration(start_ms, end_ms),
+                "artifact_uri": run.info.artifact_uri,
+                "metrics_count": metrics_count,
+                "params_count": params_count,
+            }
+        )
 
     return {"experiment_id": experiment_id, "runs": results}
 
@@ -262,10 +261,12 @@ def list_artifacts(run_id: str, path: str = "", tracking_uri: str | None = None)
 
     results = []
     for item in artifact_list:
-        results.append({
-            "path": item.path,
-            "is_dir": item.is_dir,
-            "file_size": item.file_size if not item.is_dir else None,
-        })
+        results.append(
+            {
+                "path": item.path,
+                "is_dir": item.is_dir,
+                "file_size": item.file_size if not item.is_dir else None,
+            }
+        )
 
     return {"run_id": run_id, "path": normalized, "artifacts": results}

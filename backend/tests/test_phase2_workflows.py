@@ -1,19 +1,14 @@
-import os
 import stat
 import time
 from pathlib import Path
-
-os.environ.setdefault(
-    "QLIB_STUDIO_DATABASE_URL",
-    "sqlite:////tmp/qlib_studio_phase2_tests.sqlite",
-)
-Path("/tmp/qlib_studio_phase2_tests.sqlite").unlink(missing_ok=True)
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
 
 from app.core.config import PROJECT_ROOT, WORKFLOWS_DIR
 from app.main import app
+from app.services import experiment_service
 
 
 @pytest.fixture
@@ -38,6 +33,31 @@ def make_fake_qrun(tmp_path: Path, script: str) -> Path:
     qrun.write_text(script)
     qrun.chmod(qrun.stat().st_mode | stat.S_IXUSR)
     return bin_dir
+
+
+def test_experiment_run_count_uses_mlflow_client_api(monkeypatch):
+    experiment = SimpleNamespace(
+        experiment_id="42",
+        name="workflow",
+        artifact_location="file:///tmp/mlruns/42",
+        lifecycle_stage="active",
+    )
+
+    class FakeClient:
+        def search_experiments(self):
+            return [experiment]
+
+        def search_runs(self, **kwargs):
+            assert "output_format" not in kwargs
+            return [object(), object()]
+
+    monkeypatch.setattr(experiment_service, "_check_mlflow", lambda: (True, None))
+    monkeypatch.setattr(experiment_service, "_get_client", lambda tracking_uri=None: FakeClient())
+
+    result = experiment_service.list_experiments("file:/tmp/mlruns")
+
+    assert result["warnings"] == []
+    assert result["experiments"][0]["run_count"] == 2
 
 
 def wait_for_status(client: TestClient, job_id: int, terminal_statuses: set[str]) -> dict:
@@ -121,12 +141,39 @@ def test_mlflow_tracking_uri_is_normalized_and_reported(client, tmp_path):
         assert set(body).issuperset(
             {
                 "mlflow_tracking_uri",
+                "tracking_backend",
                 "resolved_mlruns_path",
                 "path_exists",
                 "experiment_count",
                 "run_count",
                 "warnings",
             }
+        )
+
+
+def test_remote_mlflow_status_is_not_treated_as_a_local_path(client):
+    from unittest.mock import patch
+
+    remote_uri = "https://mlflow.example.test"
+    client.post(
+        "/api/settings/mlflow-tracking-uri",
+        json={"mlflow_tracking_uri": remote_uri},
+    )
+    try:
+        with patch("app.api.experiments.experiment_service.list_experiments") as mocked:
+            mocked.return_value = {"experiments": [], "warnings": []}
+            response = client.get("/api/mlflow/status")
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body["tracking_backend"] == "remote"
+        assert body["resolved_mlruns_path"] == remote_uri
+        assert body["path_exists"] is True
+        assert not any("path does not exist" in item for item in body["warnings"])
+    finally:
+        client.post(
+            "/api/settings/mlflow-tracking-uri",
+            json={"mlflow_tracking_uri": "file:./mlruns"},
         )
 
 
@@ -173,10 +220,7 @@ def test_qrun_receives_normalized_mlflow_tracking_uri(client, workflow_name, mon
 
     bin_dir = make_fake_qrun(
         tmp_path,
-        "#!/bin/sh\n"
-        "echo child-cwd=$(pwd)\n"
-        "echo child-mlflow=$MLFLOW_TRACKING_URI\n"
-        "exit 0\n",
+        "#!/bin/sh\necho child-cwd=$(pwd)\necho child-mlflow=$MLFLOW_TRACKING_URI\nexit 0\n",
     )
     monkeypatch.setenv("PATH", str(bin_dir))
 
@@ -214,9 +258,7 @@ def test_qrun_success_failure_and_logs(client, workflow_name, monkeypatch, tmp_p
     assert "success-out" in success_logs
     assert "success-err" in success_logs
 
-    (bin_dir / "qrun").write_text(
-        "#!/bin/sh\necho fail-out\necho fail-err >&2\nexit 7\n"
-    )
+    (bin_dir / "qrun").write_text("#!/bin/sh\necho fail-out\necho fail-err >&2\nexit 7\n")
     failed = client.post(
         "/api/jobs/qrun",
         json={"workflow_name": workflow_name, "working_dir": "."},

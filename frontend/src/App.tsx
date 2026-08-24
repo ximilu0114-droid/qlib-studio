@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import type { QlibStatusResponse } from "./types/api";
 import {
   fetchHealth,
@@ -12,11 +12,12 @@ import StatusCards from "./components/StatusCards";
 import DataPathSection from "./components/DataPathSection";
 import DataHealth from "./components/DataHealth";
 import Warnings from "./components/Warnings";
-import WorkflowRunner from "./components/WorkflowRunner";
-import ExperimentCenter from "./components/ExperimentCenter";
-import BacktestAnalyzer from "./components/BacktestAnalyzer";
-import RDAgentRunner from "./components/RDAgentRunner";
 import { useTranslation } from "./i18n";
+
+const WorkflowRunner = lazy(() => import("./components/WorkflowRunner"));
+const ExperimentCenter = lazy(() => import("./components/ExperimentCenter"));
+const BacktestAnalyzer = lazy(() => import("./components/BacktestAnalyzer"));
+const RDAgentRunner = lazy(() => import("./components/RDAgentRunner"));
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,7 @@ export default function App() {
   const [backendError, setBackendError] = useState(false);
   const [qlibStatus, setQlibStatus] = useState<QlibStatusResponse | null>(null);
   const [dataPath, setDataPath] = useState("");
+  const [appVersion, setAppVersion] = useState("");
   const [currentPage, setCurrentPage] = useState("dashboard");
 
   const { t, language, setLanguage } = useTranslation();
@@ -32,11 +34,12 @@ export default function App() {
     setLoading(true);
     setBackendError(false);
     try {
-      const [, status, settings] = await Promise.all([
-        fetchHealth().then(() => setBackendOk(true)),
+      const [health, status, settings] = await Promise.all([
+        fetchHealth(),
         fetchQlibStatus(),
         fetchSettings(),
       ]);
+      setAppVersion(health.version);
       setQlibStatus(status);
       setDataPath(settings.qlib_data_path);
       setBackendOk(true);
@@ -98,7 +101,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
+      <Sidebar
+        appVersion={appVersion}
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+      />
 
       <main className="flex-1 flex flex-col md:ml-64 w-full">
         {/* Mobile Top Bar */}
@@ -237,14 +244,24 @@ export default function App() {
                 backendError={backendError}
               />
             </>
-          ) : currentPage === "workflows" ? (
-            <WorkflowRunner />
-          ) : currentPage === "experiments" ? (
-            <ExperimentCenter />
-          ) : currentPage === "backtest" ? (
-            <BacktestAnalyzer />
           ) : (
-            <RDAgentRunner />
+            <Suspense
+              fallback={
+                <div className="py-16 text-center text-on-surface-variant">
+                  {t('dashboard.loadingStatus')}
+                </div>
+              }
+            >
+              {currentPage === "workflows" ? (
+                <WorkflowRunner />
+              ) : currentPage === "experiments" ? (
+                <ExperimentCenter />
+              ) : currentPage === "backtest" ? (
+                <BacktestAnalyzer />
+              ) : (
+                <RDAgentRunner />
+              )}
+            </Suspense>
           )}
         </div>
       </main>

@@ -7,9 +7,7 @@ from app.services.path_checker import check_path_exists, expand_user_path
 def check_qlib_status(data_dir: str) -> dict:
     warnings: list[str] = []
 
-    python_version = (
-        f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-    )
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
     qlib_installed = False
     qlib_version = None
@@ -29,9 +27,7 @@ def check_qlib_status(data_dir: str) -> dict:
         mlflow_installed = True
         mlflow_version = getattr(mlflow, "__version__", None)
     except ImportError:
-        warnings.append(
-            "mlflow is not installed. Install with: pip install mlflow"
-        )
+        warnings.append("mlflow is not installed. Install with: pip install mlflow")
 
     data_path = expand_user_path(data_dir)
     data_path_exists = check_path_exists(data_dir)
