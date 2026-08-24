@@ -104,7 +104,8 @@ def test_status_uses_saved_rdagent_settings(client, tmp_path):
     working_dir.mkdir()
     output_dir.mkdir()
     env_file = working_dir / "custom.env"
-    env_file.write_text("OPENAI_API_KEY=test-redaction-token\n")
+    test_token = "sk-" + "test-token-for-redaction-only"
+    env_file.write_text(f"OPENAI_API_KEY={test_token}\n")
 
     settings = client.post(
         "/api/settings/rdagent",
@@ -125,11 +126,11 @@ def test_status_uses_saved_rdagent_settings(client, tmp_path):
     assert body["output_dir_exists"] is True
     assert body["env_file_exists"] is True
     assert body["llm_config_detected"] is True
-    assert "sk-testsecret" not in str(body)
+    assert test_token not in str(body)
 
 
 def test_rdagent_logs_and_command_args_are_redacted(client, monkeypatch, tmp_path):
-    secret = "test-redaction-token"
+    secret = "sk-" + "test-token-for-redaction-only"
     bin_dir = make_fake_rdagent(
         tmp_path,
         "#!/bin/sh\n"
